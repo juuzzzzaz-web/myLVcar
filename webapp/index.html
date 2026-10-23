@@ -1,0 +1,2940 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>MyCar</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0F1216;
+            --bg-card: #1A1F26;
+            --bg-card-hover: #232830;
+            --bg-elevated: #22272F;
+            --bg-nav: rgba(20, 24, 30, 0.96);
+            --gold: #C9A56B;
+            --gold-soft: rgba(201, 165, 107, 0.10);
+            --gold-line: rgba(201, 165, 107, 0.20);
+            --text: #F0EDE8;
+            --text-muted: #8B8A86;
+            --text-dim: #5C5B58;
+            --border-soft: rgba(255, 255, 255, 0.05);
+            --border-gold: rgba(201, 165, 107, 0.15);
+            --success: #5C8B6E;
+            --warning: #B8935A;
+            --danger: #A05048;
+            --r-lg: 20px;
+            --r-md: 18px;
+            --r-sm: 16px;
+            --r-xs: 14px;
+            --r-icon: 10px;
+            --t-color: 0.15s ease;
+            --t-transform: 0.1s ease;
+            --t-fade: 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.4;
+            -webkit-font-smoothing: antialiased;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
+            min-height: 100vh;
+            padding-bottom: calc(80px + env(safe-area-inset-bottom));
+        }
+
+        /* ============ ТИПОГРАФИКА ============ */
+        .t-page {
+            font-family: 'Manrope', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+
+        .t-car {
+            font-family: 'Manrope', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+
+        .t-section {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+            color: var(--text);
+        }
+
+        .t-amount {
+            font-family: 'Manrope', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+
+        .t-meta {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .t-caps {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        /* ============ ЗАГОЛОВОК ============ */
+        .page-head {
+            padding: 24px 20px 16px;
+        }
+
+        /* ============ КАРТОЧКА МАШИНЫ ============ */
+        .car-card {
+            position: relative;
+            background: linear-gradient(180deg, #1A1F26 0%, #171B21 100%);
+            border-radius: var(--r-lg);
+            padding: 22px 20px;
+            border-top: 1px solid var(--gold-line);
+            margin: 0 20px 16px;
+            overflow: hidden;
+            min-height: 130px;
+            cursor: pointer;
+        }
+
+        .car-card__header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .car-card__mileage {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .car-card__mileage-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gold);
+            letter-spacing: 0.02em;
+        }
+
+        .car-card__mileage-unit {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .car-card__plate {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            position: relative;
+            z-index: 1;
+            margin-top: 4px;
+        }
+
+        .car-logo {
+            position: absolute;
+            top: 22px;
+            right: 20px;
+            width: 30px;
+            height: 30px;
+            opacity: 0.7;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .car-photo {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 55%;
+            height: 100%;
+            object-fit: cover;
+            mask-image: linear-gradient(to left, black 40%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to left, black 40%, transparent 100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ============ БЛИЖАЙШЕЕ ТО ============ */
+        .reminder-card {
+            background: var(--bg-card);
+            border-radius: var(--r-sm);
+            padding: 16px 18px;
+            border-left: 3px solid var(--gold);
+            margin: 0 20px 16px;
+        }
+
+        .reminder-card__label {
+            margin-bottom: 6px;
+        }
+
+        .reminder-card__title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+
+        .reminder-card__subtitle {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        /* ============ ПЛИТКА ДЕЙСТВИЙ ============ */
+        .tiles {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 0 20px 16px;
+        }
+
+        .tile {
+            background: var(--bg-card);
+            border: none;
+            border-radius: var(--r-sm);
+            padding: 14px 4px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color var(--t-color), transform var(--t-transform);
+        }
+
+        .tile svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .tile:active {
+            background: var(--bg-card-hover);
+            transform: scale(0.98);
+        }
+
+        /* ============ БЛОК РАСХОДОВ ============ */
+        .expenses {
+            background: var(--bg-card);
+            border-radius: var(--r-md);
+            padding: 18px;
+            margin: 0 20px 16px;
+        }
+
+        .expenses__amount {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            margin: 10px 0 14px;
+        }
+
+        .expenses__currency {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .expenses__chart {
+            height: 32px;
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .expenses__bar {
+            flex: 1;
+            background: var(--text-dim);
+            border-radius: 3px;
+            opacity: 0.45;
+            min-height: 4px;
+        }
+
+        .expenses__bar.active {
+            background: var(--gold);
+            opacity: 1;
+        }
+
+        /* ============ ЗАПИСИ ============ */
+        .records {
+            margin: 0 20px 16px;
+        }
+
+        .records__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .records__all {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gold);
+            background: none;
+            border: none;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .record {
+            background: var(--bg-card);
+            border-radius: var(--r-xs);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background-color var(--t-color);
+        }
+
+        .record:active {
+            background: var(--bg-card-hover);
+        }
+
+        .record__icon {
+            width: 16px;
+            height: 16px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .record__content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .record__title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .record__amount {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            flex-shrink: 0;
+        }
+
+        /* ============ AI-КАРТОЧКА ============ */
+        .ai-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-gold);
+            border-radius: var(--r-md);
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 0 20px 16px;
+            cursor: pointer;
+            transition: background-color var(--t-color);
+        }
+
+        .ai-card:active {
+            background: var(--bg-card-hover);
+        }
+
+        .ai-card__icon {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--r-icon);
+            background: var(--gold-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold);
+            flex-shrink: 0;
+        }
+
+        .ai-card__icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .ai-card__content {
+            flex: 1;
+        }
+
+        .ai-card__title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 2px;
+        }
+
+        .ai-card__arrow {
+            width: 16px;
+            height: 16px;
+            color: var(--gold);
+            flex-shrink: 0;
+        }
+
+        /* ============ НАВИГАЦИЯ ============ */
+        .nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-nav);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border-soft);
+            padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            z-index: 100;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .nav__item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            font-size: 10px;
+            font-weight: 500;
+            background: none;
+            border: none;
+            font-family: inherit;
+            cursor: pointer;
+            padding: 4px 0;
+        }
+
+        .nav__item svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .nav__item--active {
+            color: var(--gold);
+        }
+
+        /* ============ СЛУЖЕБНОЕ ============ */
+        .empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty__title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .empty__text {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            line-height: 1.5;
+            max-width: 260px;
+        }
+
+        .error {
+            background: rgba(160, 80, 72, 0.12);
+            color: #C07068;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin: 0 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        /* ============ МОДАЛКА ============ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 12, 15, 0.75);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            width: 100%;
+            max-width: 480px;
+            background: var(--bg-elevated);
+            border-radius: 24px 24px 0 0;
+            padding: 10px 20px calc(24px + env(safe-area-inset-bottom));
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+
+        .modal-overlay.open .modal {
+            transform: translateY(0);
+        }
+
+        .modal__handle {
+            width: 36px;
+            height: 4px;
+            background: var(--text-dim);
+            border-radius: 999px;
+            margin: 0 auto 20px;
+        }
+
+        .modal__title {
+            font-family: 'Manrope', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field__label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            letter-spacing: 0.02em;
+        }
+
+        .field__input,
+        .field__select {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s ease;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .field__input:focus,
+        .field__select:focus {
+            border-color: var(--gold-line);
+        }
+
+        .field__input::placeholder {
+            color: var(--text-dim);
+        }
+
+        .field__row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .modal__actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px 20px;
+            border-radius: 14px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.1s ease, opacity 0.15s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn--primary {
+            background: var(--gold);
+            color: #0F1216;
+        }
+
+        .btn--secondary {
+            background: var(--bg-card);
+            color: var(--text);
+            border: 1px solid var(--border-soft);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: var(--bg-elevated);
+            color: var(--text);
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid var(--border-soft);
+            opacity: 0;
+            z-index: 300;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ============ ЭКРАН ЗАПИСЕЙ ============ */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 0 20px 16px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .filters::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-chip {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            border-radius: 999px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .filter-chip.active {
+            background: var(--gold-soft);
+            border-color: var(--gold-line);
+            color: var(--gold);
+        }
+
+        .month-group {
+            margin: 0 20px 16px;
+        }
+
+        .month-group__title {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin: 20px 0 10px;
+        }
+
+        /* Модалка деталей записи */
+        .record-detail-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 12, 15, 0.75);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 210;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .record-detail-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .record-detail-overlay .modal {
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+
+        .record-detail-overlay.open .modal {
+            transform: translateY(0);
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-soft);
+            font-size: 14px;
+        }
+
+        .detail-row:last-of-type {
+            border-bottom: none;
+        }
+
+        .detail-row__label {
+            color: var(--text-muted);
+        }
+
+        .detail-row__value {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .btn--danger {
+            background: rgba(160, 80, 72, 0.15);
+            color: #C07068;
+            border: 1px solid rgba(160, 80, 72, 0.3);
+        }
+
+        /* ============ КАРТОЧКА МАШИНЫ ============ */
+        .car-detail-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 12, 15, 0.75);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 220;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .car-detail-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .car-detail-overlay .modal {
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+            max-height: 92vh;
+            overflow-y: auto;
+        }
+
+        .car-detail-overlay.open .modal {
+            transform: translateY(0);
+        }
+
+        .car-detail__head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .car-detail__title {
+            font-family: 'Manrope', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+        }
+
+        .car-detail__sub {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .car-detail__actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .icon-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .icon-btn:active {
+            background: var(--bg-card-hover);
+            color: var(--gold);
+        }
+
+        .icon-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .car-detail__block {
+            margin-bottom: 20px;
+        }
+
+        .car-detail__block-title {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-soft);
+            font-size: 14px;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-row__label {
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .detail-row__value {
+            color: var(--text);
+            font-weight: 600;
+            text-align: right;
+            word-break: break-word;
+        }
+
+        .car-detail__hint {
+            background: var(--gold-soft);
+            border: 1px solid var(--gold-line);
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--text-muted);
+            margin: 16px 0;
+        }
+
+        .car-detail__hint span {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        /* ============ ЧЕКБОКСЫ ============ */
+        .checkbox-group {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-soft);
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .checkbox-input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .checkbox-mark {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: 1.5px solid var(--text-dim);
+            background: var(--bg-card);
+            flex-shrink: 0;
+            position: relative;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .checkbox-mark::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 7px;
+            width: 5px;
+            height: 9px;
+            border: solid var(--bg);
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+
+        .checkbox-input:checked+.checkbox-mark {
+            background: var(--gold);
+            border-color: var(--gold);
+        }
+
+        .checkbox-input:checked+.checkbox-mark::after {
+            opacity: 1;
+        }
+
+        .checkbox-label {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .checkbox-subfield {
+            display: none;
+            margin: 4px 0 12px 34px;
+        }
+
+        .checkbox-subfield.visible {
+            display: block;
+        }
+
+        /* ============ ИНКРЕМЕНТ ПРОБЕГА ============ */
+        .mileage-input-wrap {
+            position: relative;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .mileage-input-wrap .field__input {
+            flex: 1;
+            min-width: 0;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .btn-inc {
+            flex-shrink: 0;
+            padding: 0 10px;
+            height: 46px;
+            border-radius: 10px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-soft);
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .btn-inc:active {
+            background: var(--gold-soft);
+            color: var(--gold);
+        }
+
+        .field__hint {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-dim);
+            margin-left: 6px;
+            letter-spacing: 0;
+            text-transform: none;
+            float: right;
+        }
+
+        /* ============ ПРОФИЛЬ ============ */
+        .profile-info {
+            padding: 12px 20px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .profile-info__avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: var(--gold-soft);
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Manrope', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        .profile-info__name {
+            font-family: 'Manrope', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .profile-info__sub {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .profile-menu {
+            padding: 0 20px;
+        }
+
+        .profile-menu__item {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--r-xs);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: background 0.15s ease;
+            text-align: left;
+        }
+
+        .profile-menu__item:active:not(:disabled) {
+            background: var(--bg-card-hover);
+        }
+
+        .profile-menu__icon {
+            width: 24px;
+            height: 24px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-menu__icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .profile-menu__text {
+            flex: 1;
+        }
+
+        .profile-menu__arrow {
+            color: var(--text-dim);
+            font-size: 18px;
+        }
+
+        .notes-hint {
+            background: var(--gold-soft);
+            border: 1px solid var(--gold-line);
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--text-muted);
+        }
+
+        .note-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--r-xs);
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .note-card__date {
+            margin-bottom: 8px;
+        }
+
+        .note-card__text {
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin-bottom: 10px;
+        }
+
+        .note-card__actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .note-card__btn {
+            width: 32px;
+            height: 32px;
+        }
+
+        .note-card__btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* ============ ДОКУМЕНТЫ ============ */
+        .doc-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--r-sm);
+            padding: 16px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .doc-card__icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--r-icon);
+            background: var(--gold-soft);
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .doc-card__icon svg { width: 20px; height: 20px; }
+        .doc-card__content { flex: 1; }
+        .doc-card__title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+        .doc-card__sub { font-size: 12px; color: var(--text-muted); }
+        .doc-card__status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        .doc-card__dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        .doc-card__delete {
+            width: 32px;
+            height: 32px;
+            color: var(--text-dim);
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .doc-card__delete:active { color: var(--danger); }
+        
+        /* ============ AI-ЧАТ ============ */
+                #aiScreen {
+            display: none;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--bg);
+            z-index: 250;
+            /* Отступ сверху, чтобы не прятаться под шапкой Telegram */
+            padding-top: calc(env(safe-area-inset-top, 0px) + 56px); 
+        }
+        #aiScreen.active { display: flex; }
+
+        #aiScreen.active {
+            display: flex;
+        }
+
+        .ai-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-soft);
+            background: var(--bg);
+            flex-shrink: 0;
+        }
+
+        .ai-head__title {
+            flex: 1;
+            font-family: 'Manrope', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .ai-head__btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .ai-head__btn:active {
+            background: var(--bg-card-hover);
+            color: var(--gold);
+        }
+
+        .ai-head__btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .ai-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 0; /* Важно, чтобы flex-контейнер правильно скроллился */
+        }
+
+        .ai-bubble {
+            max-width: 85%;
+            padding: 12px 14px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .ai-bubble--user {
+            align-self: flex-end;
+            background: var(--gold);
+            color: #0F1216;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai-bubble--assistant {
+            align-self: flex-start;
+            background: var(--bg-card);
+            color: var(--text);
+            border: 1px solid var(--border-gold);
+            border-bottom-left-radius: 4px;
+        }
+
+        .ai-bubble__label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 6px;
+        }
+
+        .ai-bubble--typing {
+            align-self: flex-start;
+            background: var(--bg-card);
+            color: var(--text-muted);
+            border: 1px solid var(--border-soft);
+            font-style: italic;
+        }
+
+        .ai-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .ai-empty__title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .ai-empty__text {
+            font-size: 13px;
+            line-height: 1.5;
+            max-width: 280px;
+        }
+
+        .ai-empty__icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: var(--gold-soft);
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .ai-empty__icon svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .ai-quick-questions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            max-width: 280px;
+            margin-top: 24px;
+        }
+
+        .ai-quick-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+
+        .ai-quick-btn:active {
+            background: var(--bg-card-hover);
+            border-color: var(--gold-line);
+        }
+
+        .ai-input-wrap {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+            border-top: 1px solid var(--border-soft);
+            background: var(--bg);
+            flex-shrink: 0;
+            align-items: flex-end;
+        }
+
+        .ai-input {
+            flex: 1;
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 14px;
+            padding: 12px 16px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text);
+            outline: none;
+            resize: none;
+            max-height: 100px;
+            min-height: 46px;
+            line-height: 1.4;
+        }
+
+        .ai-input:focus {
+            border-color: var(--gold-line);
+        }
+
+        .ai-input::placeholder {
+            color: var(--text-dim);
+        }
+
+        .ai-send {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: var(--gold);
+            color: #0F1216;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: opacity 0.15s ease;
+        }
+
+        .ai-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .ai-send svg {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="loading">Загрузка...</div>
+    </div>
+
+    <nav class="nav" id="mainNav">
+        <button class="nav__item nav__item--active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M3 11L12 3l9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />
+            </svg>
+            <span>Главная</span>
+        </button>
+        <button class="nav__item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <line x1="8" y1="6" x2="20" y2="6" />
+                <line x1="8" y1="12" x2="20" y2="12" />
+                <line x1="8" y1="18" x2="20" y2="18" />
+                <circle cx="4" cy="6" r="0.5" />
+                <circle cx="4" cy="12" r="0.5" />
+                <circle cx="4" cy="18" r="0.5" />
+            </svg>
+            <span>Записи</span>
+        </button>
+        <button class="nav__item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M14 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7z" />
+                <polyline points="14 3 14 7 18 7" />
+            </svg>
+            <span>Документы</span>
+        </button>
+        <button class="nav__item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+            </svg>
+            <span>Профиль</span>
+        </button>
+    </nav>
+
+    <!-- ЭКРАН ЗАПИСЕЙ -->
+    <div id="recordsScreen" class="screen">
+        <div class="page-head">
+            <h1 class="t-page">Записи</h1>
+        </div>
+        <div class="filters" id="filtersBar">
+            <button class="filter-chip active" data-filter="">Все</button>
+            <button class="filter-chip" data-filter="fuel">Топливо</button>
+            <button class="filter-chip" data-filter="maintenance">ТО</button>
+            <button class="filter-chip" data-filter="part">Запчасти</button>
+            <button class="filter-chip" data-filter="expense">Расход</button>
+        </div>
+        <div id="recordsList"></div>
+    </div>
+
+    <!-- ЭКРАН ДОКУМЕНТОВ -->
+    <div id="documentsScreen" class="screen">
+        <div class="page-head" style="display: flex; justify-content: space-between; align-items: center;">
+            <h1 class="t-page">Документы</h1>
+            <button class="icon-btn" id="btnAddDoc" style="width: 38px; height: 38px; background: var(--gold); color: #0F1216; border: none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+        </div>
+        <div id="documentsList" style="padding: 0 20px;"></div>
+    </div>
+    
+    <!-- ЭКРАН ПРОФИЛЯ -->
+    <div id="profileScreen" class="screen">
+        <div class="page-head">
+            <h1 class="t-page">Профиль</h1>
+        </div>
+        <div class="profile-info">
+            <div class="profile-info__avatar" id="profileAvatar">?</div>
+            <div class="profile-info__name" id="profileName">Пользователь</div>
+            <div class="profile-info__sub" id="profileSub"></div>
+        </div>
+        <div class="profile-menu">
+            <button class="profile-menu__item" id="menuNotes">
+                <span class="profile-menu__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+                </span>
+                <span class="profile-menu__text">Заметки о машине</span>
+                <span class="profile-menu__arrow">›</span>
+            </button>
+            <button class="profile-menu__item" disabled style="opacity: 0.4;">
+                <span class="profile-menu__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z" />
+                        <path d="M10 20a2 2 0 0 0 4 0" />
+                    </svg>
+                </span>
+                <span class="profile-menu__text">Уведомления</span>
+                <span class="profile-menu__arrow">›</span>
+            </button>
+            <button class="profile-menu__item" disabled style="opacity: 0.4;">
+                <span class="profile-menu__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
+                    </svg>
+                </span>
+                <span class="profile-menu__text">О приложении</span>
+                <span class="profile-menu__arrow">›</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ЭКРАН ЗАМЕТОК -->
+    <div id="notesScreen" class="screen">
+        <div class="page-head" style="display: flex; align-items: center; gap: 12px;">
+            <button class="icon-btn" id="btnBackFromNotes" style="width: 36px; height: 36px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6" />
+                </svg>
+            </button>
+            <h1 class="t-page" style="margin: 0;">Заметки</h1>
+        </div>
+        <div style="padding: 0 20px;">
+            <div class="notes-hint">Любая информация, которую AI-помощник будет учитывать при ответах: особенности
+                машины, контакты мастеров, предпочтения по маслам и т.д.</div>
+            <div class="field" style="margin-top: 20px;">
+                <textarea class="field__textarea" id="newNoteTextarea" rows="4" placeholder="Напиши новую заметку..."
+                    style="width: 100%; background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 12px; padding: 14px 16px; font-family: inherit; font-size: 15px; font-weight: 500; color: var(--text); outline: none; resize: vertical; min-height: 100px;"></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
+                <button type="button" class="btn btn--primary" id="btnAddNote"
+                    style="flex: 0 0 auto; padding: 12px 24px;">Добавить</button>
+            </div>
+            <div class="t-caps" style="margin-bottom: 12px;">Все заметки</div>
+            <div id="notesList"></div>
+        </div>
+    </div>
+
+    <!-- ЭКРАН AI-ПОМОЩНИКА -->
+    <div id="aiScreen">
+        <div class="ai-head">
+            <button class="ai-head__btn" id="btnAiBack">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6" />
+                </svg>
+            </button>
+            <div class="ai-head__title">AI-помощник</div>
+            <button class="ai-head__btn" id="btnAiClear" title="Очистить историю">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+            </button>
+        </div>
+        <div class="ai-messages" id="aiMessages"></div>
+        <div class="ai-input-wrap">
+            <textarea class="ai-input" id="aiInput" rows="1" placeholder="Спросите о машине..."></textarea>
+            <button class="ai-send" id="btnAiSend">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА «О МАШИНЕ» -->
+    <div class="car-detail-overlay" id="carDetailOverlay">
+        <div class="modal">
+            <div class="modal__handle"></div>
+            <div class="car-detail__head">
+                <div>
+                    <div class="car-detail__title" id="carDetailTitle">Машина</div>
+                    <div class="car-detail__sub" id="carDetailSub"></div>
+                </div>
+                <div class="car-detail__actions">
+                    <button type="button" class="icon-btn" id="btnCopyCar" title="Копировать">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                    </button>
+                    <button type="button" class="icon-btn" id="btnEditCar" title="Редактировать">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="carDetailView"></div>
+            <div id="carDetailEdit" style="display: none;">
+                <div class="field"><label class="field__label">Марка</label><input class="field__input" type="text"
+                        id="edit_brand"></div>
+                <div class="field"><label class="field__label">Модель</label><input class="field__input" type="text"
+                        id="edit_model"></div>
+                <div class="field field__row">
+                    <div><label class="field__label">Год</label><input class="field__input" type="number" id="edit_year"
+                            min="1900" max="2100"></div>
+                    <div><label class="field__label">Госномер</label><input class="field__input" type="text"
+                            id="edit_license_plate"></div>
+                </div>
+                <div class="field"><label class="field__label">VIN</label><input class="field__input" type="text"
+                        id="edit_vin"></div>
+                <div class="field"><label class="field__label">Пробег, км</label><input class="field__input"
+                        type="number" id="edit_mileage" min="0"></div>
+                <div class="field field__row">
+                    <div><label class="field__label">Объём двигателя</label><input class="field__input" type="text"
+                            id="edit_engine_volume" placeholder="1.6"></div>
+                    <div><label class="field__label">Мощность, л.с.</label><input class="field__input" type="number"
+                            id="edit_engine_power" min="0"></div>
+                </div>
+                <div class="field field__row">
+                    <div>
+                        <label class="field__label">Топливо</label>
+                        <select class="field__select" id="edit_fuel_type">
+                            <option value="">— не указано —</option>
+                            <option value="бензин">Бензин</option>
+                            <option value="дизель">Дизель</option>
+                            <option value="газ">Газ</option>
+                            <option value="гибрид">Гибрид</option>
+                            <option value="электро">Электро</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field__label">Трансмиссия</label>
+                        <select class="field__select" id="edit_transmission">
+                            <option value="">— не указано —</option>
+                            <option value="МКПП">МКПП</option>
+                            <option value="АКПП">АКПП</option>
+                            <option value="вариатор">Вариатор</option>
+                            <option value="робот">Робот</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field field__row">
+                    <div>
+                        <label class="field__label">Привод</label>
+                        <select class="field__select" id="edit_drivetrain">
+                            <option value="">— не указано —</option>
+                            <option value="передний">Передний</option>
+                            <option value="задний">Задний</option>
+                            <option value="полный">Полный</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field__label">Кузов</label>
+                        <select class="field__select" id="edit_body_type">
+                            <option value="">— не указано —</option>
+                            <option value="седан">Седан</option>
+                            <option value="хэтчбек">Хэтчбек</option>
+                            <option value="универсал">Универсал</option>
+                            <option value="кроссовер">Кроссовер</option>
+                            <option value="внедорожник">Внедорожник</option>
+                            <option value="купе">Купе</option>
+                            <option value="минивэн">Минивэн</option>
+                            <option value="пикап">Пикап</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field field__row">
+                    <div><label class="field__label">Номер СТС</label><input class="field__input" type="text"
+                            id="edit_sts_number"></div>
+                    <div><label class="field__label">Номер ПТС</label><input class="field__input" type="text"
+                            id="edit_pts_number"></div>
+                </div>
+                <div class="modal__actions">
+                    <button type="button" class="btn btn--secondary" id="btnCancelCarEdit">Отмена</button>
+                    <button type="button" class="btn btn--primary" id="btnSaveCarEdit">Сохранить</button>
+                </div>
+            </div>
+            <div class="car-detail__hint" id="carDetailHint" style="display: none;">
+                🤖 AI-помощник точнее с полными данными. Заполни: <span id="carDetailHintMissing"></span>.
+            </div>
+            <div class="modal__actions" id="carDetailCloseRow">
+                <button type="button" class="btn btn--secondary" id="btnCloseCarDetail">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА НОВОГО ДОКУМЕНТА -->
+    <div class="modal-overlay" id="docModalOverlay">
+        <div class="modal">
+            <div class="modal__handle"></div>
+            <div class="modal__title">Новый документ</div>
+            <form id="docForm">
+                <div class="field">
+                    <label class="field__label">Тип документа</label>
+                    <select class="field__select" id="doc_type">
+                        <option value="СТС">СТС</option>
+                        <option value="ПТС">ПТС</option>
+                        <option value="ОСАГО">ОСАГО</option>
+                        <option value="КАСКО">КАСКО</option>
+                        <option value="Техосмотр">Техосмотр</option>
+                        <option value="Прочее">Прочее</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="field__label">Номер документа</label>
+                    <input class="field__input" type="text" id="doc_number" placeholder="Например, 1234567890">
+                </div>
+                <div class="field field__row">
+                <div>
+                        <label class="field__label">Дата выдачи</label>
+                        <input class="field__input" type="date" id="doc_issued">
+                    </div>
+                    <div id="docExpiresWrapper">
+                        <label class="field__label">Действует до</label>
+                        <input class="field__input" type="date" id="doc_expires">
+                    </div>
+                </div>
+                <div class="modal__actions">
+                    <button type="button" class="btn btn--secondary" id="btnCancelDoc">Отмена</button>
+                    <button type="submit" class="btn btn--primary" id="btnSaveDoc">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>    
+    
+    <!-- МОДАЛКА ДЕТАЛЕЙ ЗАПИСИ -->
+    <div class="record-detail-overlay" id="recordDetailOverlay">
+        <div class="modal">
+            <div class="modal__handle"></div>
+            <div class="modal__title" id="detailTitle">Запись</div>
+            <div id="detailBody"></div>
+            <div class="modal__actions">
+                <button type="button" class="btn btn--danger" id="btnDeleteRecord">Удалить</button>
+                <button type="button" class="btn btn--primary" id="btnCloseDetail">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА ДОБАВЛЕНИЯ ЗАПИСИ -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <div class="modal__handle"></div>
+            <div class="modal__title" id="modalTitle">Новая запись</div>
+            <form id="recordForm">
+                <input type="hidden" id="recordType" name="type" value="fuel">
+                <div class="field"><label class="field__label" for="f_date">Дата</label><input class="field__input"
+                        type="date" id="f_date" required></div>
+                <div class="field">
+                    <label class="field__label" for="f_mileage">Пробег, км <span class="field__hint"
+                            id="mileageHint"></span></label>
+                    <div class="mileage-input-wrap">
+                        <input class="field__input" type="text" inputmode="numeric" id="f_mileage" placeholder="78420">
+                        <button type="button" class="btn-inc" data-inc="10">+10</button>
+                        <button type="button" class="btn-inc" data-inc="100">+100</button>
+                    </div>
+                </div>
+                <div id="fuelFields" class="field field__row">
+                    <div><label class="field__label" for="f_liters">Литры</label><input class="field__input"
+                            type="number" id="f_liters" placeholder="52" min="0" step="0.01"></div>
+                    <div>
+                        <label class="field__label" for="f_fuel_type">Тип топлива</label>
+                        <select class="field__select" id="f_fuel_type">
+                            <option value="АИ-92">АИ-92</option>
+                            <option value="АИ-95" selected>АИ-95</option>
+                            <option value="АИ-98">АИ-98</option>
+                            <option value="ДТ">ДТ</option>
+                            <option value="Газ">Газ</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="maintenanceFields" style="display: none;">
+                    <div class="field">
+                        <label class="field__label" for="f_work">Что делали?</label>
+                        <select class="field__select" id="f_work">
+                            <option value="oil_change" selected>Замена масла</option>
+                            <option value="air_filter">Воздушный фильтр</option>
+                            <option value="cabin_filter">Салонный фильтр</option>
+                            <option value="spark_plugs">Свечи зажигания</option>
+                            <option value="brake_pads">Тормозные колодки</option>
+                            <option value="other">Прочее</option>
+                        </select>
+                    </div>
+                    <div id="oilFields" class="field field__row">
+                        <div>
+                            <label class="field__label" for="f_oil_type">Тип масла</label>
+                            <select class="field__select" id="f_oil_type">
+                                <option value="">— не указано —</option>
+                                <option value="5W-30">5W-30</option>
+                                <option value="5W-40" selected>5W-40</option>
+                                <option value="0W-20">0W-20</option>
+                                <option value="0W-30">0W-30</option>
+                                <option value="10W-40">10W-40</option>
+                            </select>
+                        </div>
+                        <div><label class="field__label" for="f_oil_brand">Производитель</label><input
+                                class="field__input" type="text" id="f_oil_brand" placeholder="Mobil, Shell..."></div>
+                    </div>
+                    <div class="checkbox-group">
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="f_air_filter" class="checkbox-input">
+                            <span class="checkbox-mark"></span>
+                            <span class="checkbox-label">Воздушный фильтр</span>
+                        </label>
+                        <div class="checkbox-subfield" id="airFilterBrandField">
+                            <input class="field__input" type="text" id="f_air_filter_brand"
+                                placeholder="Производитель (Mann, Bosch...)">
+                        </div>
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="f_cabin_filter" class="checkbox-input">
+                            <span class="checkbox-mark"></span>
+                            <span class="checkbox-label">Салонный фильтр</span>
+                        </label>
+                        <div class="checkbox-subfield" id="cabinFilterBrandField">
+                            <input class="field__input" type="text" id="f_cabin_filter_brand"
+                                placeholder="Производитель (Mann, Bosch...)">
+                        </div>
+                    </div>
+                    <div id="filterFields" class="field" style="display: none;">
+                        <label class="field__label" for="f_filter_brand">Производитель фильтра</label>
+                        <input class="field__input" type="text" id="f_filter_brand" placeholder="Mann, Bosch...">
+                    </div>
+                </div>
+                <div id="partFields" style="display: none;">
+                    <div class="field"><label class="field__label" for="f_part_name">Название детали</label><input
+                            class="field__input" type="text" id="f_part_name" placeholder="Колодки передние"></div>
+                    <div class="field"><label class="field__label" for="f_part_brand">Производитель</label><input
+                            class="field__input" type="text" id="f_part_brand" placeholder="Bosch, Brembo..."></div>
+                </div>
+                <div class="field"><label class="field__label" for="f_description">Описание</label><input
+                        class="field__input" type="text" id="f_description" placeholder="Комментарий"></div>
+                <div class="field"><label class="field__label" for="f_cost">Сумма, ₽</label><input class="field__input"
+                        type="number" id="f_cost" placeholder="3200" min="0" step="0.01"></div>
+                <div class="modal__actions">
+                    <button type="button" class="btn btn--secondary" id="btnCancel">Отмена</button>
+                    <button type="submit" class="btn btn--primary" id="btnSave">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        tg.setHeaderColor('#0F1216');
+        tg.setBackgroundColor('#0F1216');
+
+        const initData = tg.initData;
+        const API_HEADERS = { 'X-Init-Data': initData, 'Content-Type': 'application/json' };
+
+        let currentCarMileage = 0;
+        let currentCar = null;
+
+        const ICONS = {
+            wrench: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
+            gear: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>`,
+            fuel: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="9" height="16" rx="1"/><path d="M15 8h3l2 3v7a1 1 0 0 1-1 1h-4"/><line x1="9" y1="8" x2="12" y2="8"/></svg>`,
+            shield: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>`,
+            sparkle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c0 5 4 9 9 9-5 0-9 4-9 9 0-5-4-9-9-9 5 0 9-4 9-9z"/></svg>`,
+            chevron: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>`,
+            coin: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h4a2 2 0 0 1 0 4h-4"/></svg>`,
+            note: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+            back: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
+            trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
+        };
+
+        const RECORD_ICON_MAP = { fuel: 'fuel', maintenance: 'wrench', repair: 'wrench', part: 'gear', expense: 'coin', note: 'note' };
+        const RECORD_LABELS = { fuel: 'Заправка', maintenance: 'ТО', repair: 'Ремонт', part: 'Замена детали', expense: 'Расход', note: 'Заметка' };
+        const TYPE_TITLES = { fuel: 'Заправка', maintenance: 'ТО / Ремонт', part: 'Замена детали', expense: 'Прочий расход' };
+
+        const BRAND_SLUGS = {
+            'bmw': 'bmw', 'toyota': 'toyota', 'honda': 'honda', 'audi': 'audi', 'mercedes': 'mercedes', 'volkswagen': 'volkswagen', 'ford': 'ford',
+            'nissan': 'nissan', 'hyundai': 'hyundai', 'kia': 'kia', 'renault': 'renault', 'peugeot': 'peugeot', 'skoda': 'skoda',
+            'mazda': 'mazda', 'subaru': 'subaru', 'volvo': 'volvo', 'lexus': 'lexus', 'tesla': 'tesla', 'porsche': 'porsche',
+            'mitsubishi': 'mitsubishi', 'suzuki': 'suzuki', 'opel': 'opel', 'fiat': 'fiat',
+        };
+
+        function getBrandLogoUrl(brand) {
+            if (!brand) return null;
+            const slug = BRAND_SLUGS[brand.toLowerCase().trim()];
+            if (!slug) return null;
+            return `https://cdn.simpleicons.org/${slug}/C9A56B`;
+        }
+
+        async function apiGet(path) {
+            const res = await fetch(path, { headers: API_HEADERS });
+            if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.detail || 'Ошибка сервера'); }
+            return res.json();
+        }
+        async function apiPost(path, body) {
+            const res = await fetch(path, { method: 'POST', headers: API_HEADERS, body: JSON.stringify(body) });
+            if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.detail ? JSON.stringify(err.detail) : 'Ошибка сервера'); }
+            return res.json();
+        }
+
+        function formatMoney(n) { return (n || 0).toLocaleString('ru-RU', { maximumFractionDigits: 0 }); }
+        function formatDate(s) { const d = new Date(s); return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }); }
+
+        function haptic(type) {
+            try {
+                if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
+                else if (type === 'error') tg.HapticFeedback.notificationOccurred('error');
+                else tg.HapticFeedback.impactOccurred('light');
+            } catch (e) { }
+        }
+
+        function showToast(text) {
+            const t = document.getElementById('toast');
+            t.textContent = text;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2200);
+        }
+
+        // ============ МОДАЛКА ДОБАВЛЕНИЯ ============
+        const overlay = document.getElementById('modalOverlay');
+        const form = document.getElementById('recordForm');
+        const modalTitle = document.getElementById('modalTitle');
+        const fuelFields = document.getElementById('fuelFields');
+        const partFields = document.getElementById('partFields');
+        const fType = document.getElementById('recordType');
+
+        function todayISO() { return new Date().toISOString().split('T')[0]; }
+
+        function onWorkChange() {
+            const work = document.getElementById('f_work').value;
+            const oilFields = document.getElementById('oilFields');
+            const filterFields = document.getElementById('filterFields');
+            const checkboxGroup = document.querySelector('.checkbox-group');
+            if (work === 'oil_change') {
+                oilFields.style.display = 'grid';
+                filterFields.style.display = 'none';
+                if (checkboxGroup) checkboxGroup.style.display = 'block';
+            } else if (work === 'air_filter' || work === 'cabin_filter') {
+                oilFields.style.display = 'none';
+                filterFields.style.display = 'block';
+                if (checkboxGroup) checkboxGroup.style.display = 'none';
+            } else {
+                oilFields.style.display = 'none';
+                filterFields.style.display = 'none';
+                if (checkboxGroup) checkboxGroup.style.display = 'none';
+            }
+        }
+
+        function openModal(type) {
+            fType.value = type;
+            modalTitle.textContent = TYPE_TITLES[type] || 'Новая запись';
+            fuelFields.style.display = (type === 'fuel') ? 'grid' : 'none';
+            partFields.style.display = (type === 'part') ? 'block' : 'none';
+            const maintFields = document.getElementById('maintenanceFields');
+            maintFields.style.display = (type === 'maintenance') ? 'block' : 'none';
+            if (type === 'maintenance') { const work = document.getElementById('f_work'); work.value = 'oil_change'; onWorkChange(); }
+            form.reset();
+            fType.value = type;
+            document.getElementById('f_date').value = todayISO();
+            const mileageInput = document.getElementById('f_mileage');
+            const mileageHint = document.getElementById('mileageHint');
+            if (currentCarMileage > 0) { mileageInput.value = currentCarMileage; mileageHint.textContent = ''; }
+            else { mileageInput.value = ''; mileageHint.textContent = ''; }
+            document.getElementById('airFilterBrandField').classList.remove('visible');
+            document.getElementById('cabinFilterBrandField').classList.remove('visible');
+            if (type === 'maintenance') { document.getElementById('f_work').value = 'oil_change'; onWorkChange(); }
+            overlay.classList.add('open');
+            haptic('light');
+        }
+
+        document.getElementById('f_work').addEventListener('change', onWorkChange);
+
+        document.querySelectorAll('.btn-inc').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const inc = parseInt(btn.dataset.inc, 10);
+                const input = document.getElementById('f_mileage');
+                const cleaned = (input.value || '').replace(/\s+/g, '');
+                const current = parseInt(cleaned, 10) || 0;
+                input.value = current + inc;
+                haptic('light');
+            });
+        });
+
+        document.getElementById('f_air_filter').addEventListener('change', (e) => {
+            document.getElementById('airFilterBrandField').classList.toggle('visible', e.target.checked);
+        });
+        document.getElementById('f_cabin_filter').addEventListener('change', (e) => {
+            document.getElementById('cabinFilterBrandField').classList.toggle('visible', e.target.checked);
+        });
+
+        function closeModal() { overlay.classList.remove('open'); }
+        document.querySelectorAll('[data-record-type]').forEach(btn => btn.addEventListener('click', () => openModal(btn.dataset.recordType)));
+        document.getElementById('btnCancel').addEventListener('click', closeModal);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSave');
+            btn.disabled = true;
+            btn.textContent = 'Сохранение...';
+            try {
+                const type = fType.value;
+                const date = document.getElementById('f_date').value;
+                const mileageRaw = (document.getElementById('f_mileage').value || '').replace(/\s+/g, '');
+                const costRaw = document.getElementById('f_cost').value;
+                const description = document.getElementById('f_description').value.trim() || null;
+                const payload = { type, date, mileage: mileageRaw ? parseInt(mileageRaw, 10) : null, cost: costRaw ? parseFloat(costRaw) : 0, description, data: {} };
+
+                if (type === 'fuel') {
+                    const liters = parseFloat(document.getElementById('f_liters').value) || 0;
+                    const fuelType = document.getElementById('f_fuel_type').value;
+                    payload.data = { liters, fuel_type: fuelType };
+                } else if (type === 'part') {
+                    const partName = document.getElementById('f_part_name').value.trim();
+                    const partBrand = document.getElementById('f_part_brand').value.trim();
+                    payload.data = { part_name: partName, brand: partBrand };
+                    if (!payload.description) payload.description = partName || 'Замена детали';
+                } else if (type === 'maintenance') {
+                    const work = document.getElementById('f_work').value;
+                    const workLabels = { oil_change: 'Замена масла', air_filter: 'Воздушный фильтр', cabin_filter: 'Салонный фильтр', spark_plugs: 'Свечи зажигания', brake_pads: 'Тормозные колодки', other: 'Прочее' };
+                    payload.data = { work };
+                    if (work === 'oil_change') {
+                        const oilType = document.getElementById('f_oil_type').value;
+                        const oilBrand = document.getElementById('f_oil_brand').value.trim();
+                        if (oilType) payload.data.oil_type = oilType;
+                        if (oilBrand) payload.data.brand = oilBrand;
+                        const parts = ['Замена масла'];
+                        if (oilType) parts.push(oilType);
+                        if (oilBrand) parts.push(oilBrand);
+                        const airChecked = document.getElementById('f_air_filter').checked;
+                        if (airChecked) {
+                            const airBrand = document.getElementById('f_air_filter_brand').value.trim();
+                            payload.data.air_filter = { brand: airBrand || null };
+                            parts.push('воздушный фильтр' + (airBrand ? ' ' + airBrand : ''));
+                        }
+                        const cabinChecked = document.getElementById('f_cabin_filter').checked;
+                        if (cabinChecked) {
+                            const cabinBrand = document.getElementById('f_cabin_filter_brand').value.trim();
+                            payload.data.cabin_filter = { brand: cabinBrand || null };
+                            parts.push('салонный фильтр' + (cabinBrand ? ' ' + cabinBrand : ''));
+                        }
+                        if (!payload.description) payload.description = parts.join(' · ');
+                    } else if (work === 'air_filter' || work === 'cabin_filter') {
+                        const filterBrand = document.getElementById('f_filter_brand').value.trim();
+                        if (filterBrand) payload.data.brand = filterBrand;
+                        if (!payload.description) payload.description = workLabels[work] + (filterBrand ? ' · ' + filterBrand : '');
+                    } else {
+                        if (!payload.description) payload.description = workLabels[work];
+                    }
+                }
+                await apiPost('/api/records', payload);
+                haptic('success');
+                closeModal();
+                showToast('Сохранено');
+                loadAll();
+            } catch (err) {
+                haptic('error');
+                showToast('Ошибка: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Сохранить';
+            }
+        });
+
+        // ============ ЗАГРУЗКА ДАННЫХ ============
+        async function loadAll() {
+            try {
+                const [carData, fuelData, recordsData, monthlyData] = await Promise.all([
+                    apiGet('/api/car'), apiGet('/api/stats/fuel'), apiGet('/api/records?limit=5'), apiGet('/api/stats/monthly'),
+                ]);
+                render(carData, fuelData, recordsData, monthlyData);
+            } catch (e) {
+                document.getElementById('app').innerHTML = `<div class="error">Ошибка: ${e.message}</div>`;
+            }
+        }
+
+        function renderExpenseChart(months) {
+            if (!months || months.length === 0) return Array.from({ length: 6 }, () => `<div class="expenses__bar" style="height:6px;"></div>`).join('');
+            const max = Math.max(...months.map(m => m.total), 1);
+            const last = months.length - 1;
+            return months.map((m, i) => {
+                const height = m.total > 0 ? Math.max((m.total / max) * 32, 4) : 4;
+                const active = i === last && m.total > 0;
+                return `<div class="expenses__bar ${active ? 'active' : ''}" style="height:${height}px;" title="${m.label}: ${formatMoney(m.total)} руб."></div>`;
+            }).join('');
+        }
+
+        function renderOilReminder(data, intervalKm) {
+            if (!data) {
+                if (intervalKm) {
+                    return `<div class="reminder-card"><div class="reminder-card__label t-caps">Ближайшее ТО</div><div class="reminder-card__title">Запиши замену масла</div><div class="reminder-card__subtitle">Нажми «ТО» → «Замена масла»</div></div>`;
+                }
+                return `<div class="reminder-card"><div class="reminder-card__label t-caps">Ближайшее ТО</div><div class="reminder-card__title">Настроить интервал</div><div class="reminder-card__subtitle">Открой бота → «⚙️ Настроить ТО»</div></div>`;
+            }
+            const km = data.km_left;
+            let valueText; let stateColor = 'var(--gold)';
+            if (km < 0) { valueText = `Просрочено на ${Math.abs(km).toLocaleString('ru-RU')} км`; stateColor = 'var(--danger)'; }
+            else if (km > 3000) { const rounded = Math.round(km / 1000) * 1000; valueText = `~${rounded.toLocaleString('ru-RU')} км`; }
+            else if (km > 1000) { const rounded = Math.round(km / 100) * 100; valueText = `~${rounded.toLocaleString('ru-RU')} км`; stateColor = 'var(--warning)'; }
+            else { valueText = `${km.toLocaleString('ru-RU')} км`; stateColor = 'var(--warning)'; }
+            return `<div class="reminder-card" style="border-left-color:${stateColor};"><div class="reminder-card__label t-caps" style="color:${stateColor};">Ближайшее ТО</div><div class="reminder-card__title">Замена масла</div><div class="reminder-card__subtitle">${valueText}</div></div>`;
+        }
+
+        function render(carData, fuelData, recordsData, monthlyData) {
+            const app = document.getElementById('app');
+            if (!carData.car) {
+                app.innerHTML = `<div class="page-head"><h1 class="t-page">Моё авто</h1></div><div class="empty"><div class="empty__title">Пока пусто</div><div class="empty__text">Добавь машину через бота — и она появится здесь.</div></div>`;
+                return;
+            }
+            const c = carData.car;
+            currentCarMileage = c.mileage || 0;
+            currentCar = c;
+            const mileage = (c.mileage || 0).toLocaleString('ru-RU');
+            const fuelCost = formatMoney(fuelData.total_cost);
+            const fuelLiters = fuelData.total_liters || 0;
+            const fuelAvg = fuelData.avg_consumption;
+            let fuelMeta = `${fuelLiters} л`;
+            if (fuelAvg) fuelMeta += ` · ${fuelAvg} л/100 км`;
+            const reminderHtml = renderOilReminder(carData.next_oil_change, c.oil_interval_km);
+            const logoUrl = getBrandLogoUrl(c.brand);
+            const carVisual = carData.photo_url ? `<img class="car-photo" src="${carData.photo_url}" alt="">` : (logoUrl ? `<img class="car-logo" src="${logoUrl}" alt="">` : '');
+
+            let recordsHtml = '';
+            if (recordsData.records && recordsData.records.length > 0) {
+                recordsHtml = recordsData.records.map(r => {
+                    const iconKey = RECORD_ICON_MAP[r.type] || 'note';
+                    const icon = ICONS[iconKey] || ICONS.note;
+                    const label = r.description || RECORD_LABELS[r.type] || r.type;
+                    const cost = r.cost > 0 ? `<div class="record__amount">${formatMoney(r.cost)} руб.</div>` : '';
+                    return `<div class="record"><span class="record__icon">${icon}</span><div class="record__content"><div class="record__title">${label}</div><div class="t-meta">${formatDate(r.date)} · ${(r.mileage || 0).toLocaleString('ru-RU')} км</div></div>${cost}</div>`;
+                }).join('');
+            } else {
+                recordsHtml = `<div class="empty"><div class="empty__title">Пока пусто</div><div class="empty__text">Нажми на плитку выше — добавь первую запись.</div></div>`;
+            }
+
+            app.innerHTML = `
+                <div class="page-head"><h1 class="t-page">Моё авто</h1></div>
+                <div class="car-card">
+                    ${carVisual}
+                    <div class="car-card__header">
+                        <div>
+                            <div class="t-car">${c.brand} ${c.model}</div>
+                            <div class="t-meta" style="margin-top:4px;">${c.year || ''}${c.engine ? ' · ' + c.engine : ''}</div>
+                        </div>
+                    </div>
+                    ${c.license_plate ? `<div class="car-card__plate">${c.license_plate}</div>` : ''}
+                </div>
+                ${reminderHtml}
+                <div class="tiles">
+                    <button class="tile" data-record-type="maintenance">${ICONS.wrench}<span>ТО</span></button>
+                    <button class="tile" data-record-type="part">${ICONS.gear}<span>Запчасти</span></button>
+                    <button class="tile" data-record-type="fuel">${ICONS.fuel}<span>Топливо</span></button>
+                    <button class="tile" data-record-type="expense">${ICONS.coin}<span>Расход</span></button>
+                </div>
+                <div class="expenses">
+                    <div class="t-section">Расходы в этом месяце</div>
+                    <div class="expenses__amount"><span class="t-amount">${fuelCost}</span><span class="expenses__currency">₽</span></div>
+                    <div class="expenses__chart">${renderExpenseChart(monthlyData.months)}</div>
+                    <div class="t-meta" style="margin-top:10px;">Топливо: ${fuelMeta}</div>
+                </div>
+                <div class="records">
+                    <div class="records__header"><span class="t-section">Последние записи</span><button class="records__all">Все ›</button></div>
+                    ${recordsHtml}
+                </div>
+                <div class="ai-card" id="openAiCard">
+                    <div class="ai-card__icon">${ICONS.sparkle}</div>
+                    <div class="ai-card__content"><div class="ai-card__title">AI-помощник</div><div class="t-meta">Спросите о машине</div></div>
+                    <span class="ai-card__arrow">${ICONS.chevron}</span>
+                </div>
+            `;
+
+            document.querySelectorAll('[data-record-type]').forEach(btn => btn.addEventListener('click', () => openModal(btn.dataset.recordType)));
+            document.getElementById('openAiCard').addEventListener('click', openAiChat);
+        }
+
+        // ============ НАВИГАЦИЯ ============
+        const mainNavBtn = document.querySelectorAll('.nav__item')[0];
+        const recordsNavBtn = document.querySelectorAll('.nav__item')[1];
+        const profileNavBtn = document.querySelectorAll('.nav__item')[3];
+
+        function showScreen(name) {
+            const app = document.getElementById('app');
+            const recordsScreen = document.getElementById('recordsScreen');
+            const profileScreen = document.getElementById('profileScreen');
+            const notesScreen = document.getElementById('notesScreen');
+            const aiScreen = document.getElementById('aiScreen');
+            const documentsScreen = document.getElementById('documentsScreen'); // ← добавили
+
+            app.style.display = 'none';
+            recordsScreen.classList.remove('active');
+            profileScreen.classList.remove('active');
+            notesScreen.classList.remove('active');
+            aiScreen.classList.remove('active');
+            documentsScreen.classList.remove('active'); // ← добавили
+            document.getElementById('mainNav').style.display = 'grid';
+
+            document.querySelectorAll('.nav__item').forEach(b => b.classList.remove('nav__item--active'));
+
+            if (name === 'records') {
+                recordsScreen.classList.add('active');
+                recordsNavBtn.classList.add('nav__item--active');
+                loadRecordsScreen();
+            } else if (name === 'profile') {
+                profileScreen.classList.add('active');
+                profileNavBtn.classList.add('nav__item--active');
+                loadProfileScreen();
+            } else if (name === 'notes') {
+                notesScreen.classList.add('active');
+                profileNavBtn.classList.add('nav__item--active');
+                loadNotesScreen();
+            } else if (name === 'documents') {           // ← добавили
+                documentsScreen.classList.add('active');
+                document.querySelectorAll('.nav__item')[2].classList.add('nav__item--active');
+                loadDocumentsScreen();
+            } else if (name === 'ai') {
+                aiScreen.classList.add('active');
+                document.getElementById('mainNav').style.display = 'none';
+                openAiChat();
+            } else {
+                app.style.display = 'block';
+                mainNavBtn.classList.add('nav__item--active');
+                loadAll();
+            }
+        }
+
+        mainNavBtn.addEventListener('click', () => showScreen('main'));
+        recordsNavBtn.addEventListener('click', () => showScreen('records'));
+        profileNavBtn.addEventListener('click', () => showScreen('profile'));
+
+        const documentsNavBtn = document.querySelectorAll('.nav__item')[2];
+        documentsNavBtn.addEventListener('click', () => showScreen('documents'));
+
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.records__all')) showScreen('records');
+        });
+
+        // ============ ЭКРАН ЗАПИСЕЙ ============
+        let currentFilter = '';
+
+        async function loadRecordsScreen() {
+            const list = document.getElementById('recordsList');
+            list.innerHTML = '<div class="loading">Загрузка...</div>';
+            try {
+                const url = currentFilter ? `/api/records-list?type=${encodeURIComponent(currentFilter)}` : '/api/records-list';
+                const data = await apiGet(url);
+                renderRecordsList(data.records || []);
+            } catch (e) {
+                list.innerHTML = `<div class="error">Ошибка: ${e.message}</div>`;
+            }
+        }
+
+        function renderRecordsList(records) {
+            const list = document.getElementById('recordsList');
+            if (!records || records.length === 0) {
+                list.innerHTML = `<div class="empty"><div class="empty__title">Пока пусто</div><div class="empty__text">Записей с таким фильтром нет.</div></div>`;
+                return;
+            }
+            const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+            const groups = {};
+            records.forEach(r => {
+                const d = new Date(r.date);
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                if (!groups[key]) groups[key] = { year: d.getFullYear(), month: d.getMonth(), items: [] };
+                groups[key].items.push(r);
+            });
+            const sortedKeys = Object.keys(groups).sort().reverse();
+            let html = '';
+            sortedKeys.forEach(key => {
+                const g = groups[key];
+                const title = `${monthNames[g.month]} ${g.year}`;
+                const recordsHtml = g.items.map(r => {
+                    const iconKey = RECORD_ICON_MAP[r.type] || 'note';
+                    const icon = ICONS[iconKey] || ICONS.note;
+                    const label = r.description || RECORD_LABELS[r.type] || r.type;
+                    const cost = r.cost > 0 ? `<div class="record__amount">${formatMoney(r.cost)} руб.</div>` : '';
+                    return `<div class="record" data-record-id="${r.id}"><span class="record__icon">${icon}</span><div class="record__content"><div class="record__title">${label}</div><div class="t-meta">${formatDate(r.date)} · ${(r.mileage || 0).toLocaleString('ru-RU')} км</div></div>${cost}</div>`;
+                }).join('');
+                html += `<div class="month-group"><div class="month-group__title">${title}</div>${recordsHtml}</div>`;
+            });
+            list.innerHTML = html;
+            list.querySelectorAll('.record[data-record-id]').forEach(el => {
+                el.addEventListener('click', () => {
+                    const id = parseInt(el.dataset.recordId, 10);
+                    const rec = records.find(r => r.id === id);
+                    if (rec) openRecordDetail(rec);
+                });
+            });
+        }
+
+        document.getElementById('filtersBar').addEventListener('click', (e) => {
+            const chip = e.target.closest('.filter-chip');
+            if (!chip) return;
+            document.querySelectorAll('#filtersBar .filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            currentFilter = chip.dataset.filter || '';
+            loadRecordsScreen();
+        });
+
+        // ============ МОДАЛКА ДЕТАЛЕЙ ============
+        const recordDetailOverlay = document.getElementById('recordDetailOverlay');
+        let currentDetailRecord = null;
+
+        function openRecordDetail(rec) {
+            currentDetailRecord = rec;
+            const workLabels = { oil_change: 'Замена масла', air_filter: 'Воздушный фильтр', cabin_filter: 'Салонный фильтр', spark_plugs: 'Свечи зажигания', brake_pads: 'Тормозные колодки', other: 'Прочее' };
+            let title = rec.description || RECORD_LABELS[rec.type] || rec.type;
+            document.getElementById('detailTitle').textContent = title;
+            const rows = [];
+            rows.push(['Дата', formatDate(rec.date)]);
+            if (rec.mileage) rows.push(['Пробег', `${rec.mileage.toLocaleString('ru-RU')} км`]);
+            if (rec.cost > 0) rows.push(['Сумма', `${formatMoney(rec.cost)} руб.`]);
+            const d = rec.data || {};
+            if (d.liters) rows.push(['Литры', `${d.liters} л`]);
+            if (d.fuel_type) rows.push(['Топливо', d.fuel_type]);
+            if (d.work && workLabels[d.work]) rows.push(['Работа', workLabels[d.work]]);
+            if (d.oil_type) rows.push(['Тип масла', d.oil_type]);
+            if (d.brand) rows.push(['Производитель', d.brand]);
+            if (d.part_name) rows.push(['Деталь', d.part_name]);
+            const rowsHtml = rows.map(([label, value]) => `<div class="detail-row"><span class="detail-row__label">${label}</span><span class="detail-row__value">${value}</span></div>`).join('');
+            document.getElementById('detailBody').innerHTML = rowsHtml || '<div class="t-meta">Нет данных</div>';
+            recordDetailOverlay.classList.add('open');
+            haptic('light');
+        }
+
+        function closeRecordDetail() { recordDetailOverlay.classList.remove('open'); currentDetailRecord = null; }
+        document.getElementById('btnCloseDetail').addEventListener('click', closeRecordDetail);
+        recordDetailOverlay.addEventListener('click', (e) => { if (e.target === recordDetailOverlay) closeRecordDetail(); });
+
+        document.getElementById('btnDeleteRecord').addEventListener('click', async () => {
+            if (!currentDetailRecord) return;
+            if (!confirm('Удалить запись?')) return;
+            try {
+                const res = await fetch(`/api/records/${currentDetailRecord.id}`, { method: 'DELETE', headers: API_HEADERS });
+                if (!res.ok) throw new Error('Не удалось удалить');
+                haptic('success');
+                showToast('Удалено');
+                closeRecordDetail();
+                loadRecordsScreen();
+            } catch (e) {
+                haptic('error');
+                showToast('Ошибка: ' + e.message);
+            }
+        });
+
+        // ============ КАРТОЧКА МАШИНЫ ============
+        const carDetailOverlay = document.getElementById('carDetailOverlay');
+
+        function openCarDetail() {
+            if (!currentCar) return;
+            const c = currentCar;
+            document.getElementById('carDetailTitle').textContent = `${c.brand} ${c.model}`;
+            document.getElementById('carDetailSub').textContent = c.year ? `${c.year}` : '';
+            renderCarDetailView(c);
+            document.getElementById('carDetailView').style.display = 'block';
+            document.getElementById('carDetailEdit').style.display = 'none';
+            document.getElementById('carDetailCloseRow').style.display = 'flex';
+            const missing = [];
+            if (!c.engine_volume) missing.push('объём двигателя');
+            if (!c.engine_power) missing.push('мощность');
+            if (!c.fuel_type) missing.push('тип топлива');
+            if (!c.transmission) missing.push('трансмиссию');
+            if (!c.drivetrain) missing.push('привод');
+            if (!c.body_type) missing.push('кузов');
+            const hintEl = document.getElementById('carDetailHint');
+            if (missing.length > 0) {
+                document.getElementById('carDetailHintMissing').textContent = missing.join(', ');
+                hintEl.style.display = 'block';
+            } else hintEl.style.display = 'none';
+            carDetailOverlay.classList.add('open');
+            haptic('light');
+        }
+
+        function renderCarDetailView(c) {
+            const view = document.getElementById('carDetailView');
+            const row = (label, value) => value ? `<div class="detail-row"><span class="detail-row__label">${label}</span><span class="detail-row__value">${value}</span></div>` : '';
+            const block = (title, rowsHtml) => rowsHtml ? `<div class="car-detail__block"><div class="car-detail__block-title">${title}</div>${rowsHtml}</div>` : '';
+            const mainRows = [row('Год', c.year), row('Госномер', c.license_plate), row('VIN', c.vin), row('Пробег', c.mileage ? `${c.mileage.toLocaleString('ru-RU')} км` : null)].join('');
+            const engineParts = [];
+            if (c.engine_volume) engineParts.push(`${c.engine_volume} л`);
+            if (c.engine_power) engineParts.push(`${c.engine_power} л.с.`);
+            if (c.fuel_type) engineParts.push(c.fuel_type);
+            const techRows = [row('Двигатель', engineParts.length ? engineParts.join(' · ') : null), row('Трансмиссия', c.transmission), row('Привод', c.drivetrain), row('Кузов', c.body_type)].join('');
+            const docsRows = [row('СТС', c.sts_number), row('ПТС', c.pts_number)].join('');
+            const serviceRows = [row('Интервал замены масла', c.oil_interval_km ? `${c.oil_interval_km.toLocaleString('ru-RU')} км` : null)].join('');
+            view.innerHTML = block('Основное', mainRows) + block('Характеристики', techRows) + block('Документы', docsRows) + block('Обслуживание', serviceRows);
+        }
+
+        function closeCarDetail() { carDetailOverlay.classList.remove('open'); }
+
+        document.addEventListener('click', (e) => {
+            const card = e.target.closest('.car-card');
+            if (card && currentCar && !e.target.closest('.car-card__plate') && !card.closest('.car-detail-overlay')) {
+                if (document.getElementById('app').contains(card)) openCarDetail();
+            }
+        });
+
+        document.getElementById('btnCloseCarDetail').addEventListener('click', closeCarDetail);
+        carDetailOverlay.addEventListener('click', (e) => { if (e.target === carDetailOverlay) closeCarDetail(); });
+
+        document.getElementById('btnCopyCar').addEventListener('click', async () => {
+            if (!currentCar) return;
+            const c = currentCar;
+            const lines = [`${c.brand} ${c.model}`];
+            if (c.year) lines.push(`Год: ${c.year}`);
+            if (c.license_plate) lines.push(`Госномер: ${c.license_plate}`);
+            if (c.vin) lines.push(`VIN: ${c.vin}`);
+            if (c.mileage) lines.push(`Пробег: ${c.mileage.toLocaleString('ru-RU')} км`);
+            const engineParts = [];
+            if (c.engine_volume) engineParts.push(`${c.engine_volume} л`);
+            if (c.engine_power) engineParts.push(`${c.engine_power} л.с.`);
+            if (c.fuel_type) engineParts.push(c.fuel_type);
+            if (engineParts.length) lines.push(`Двигатель: ${engineParts.join(' · ')}`);
+            if (c.transmission) lines.push(`Трансмиссия: ${c.transmission}`);
+            if (c.drivetrain) lines.push(`Привод: ${c.drivetrain}`);
+            if (c.body_type) lines.push(`Кузов: ${c.body_type}`);
+            if (c.sts_number) lines.push(`СТС: ${c.sts_number}`);
+            if (c.pts_number) lines.push(`ПТС: ${c.pts_number}`);
+            if (c.oil_interval_km) lines.push(`Интервал замены масла: ${c.oil_interval_km.toLocaleString('ru-RU')} км`);
+            try {
+                await navigator.clipboard.writeText(lines.join('\n'));
+                haptic('success');
+                showToast('Скопировано');
+            } catch (err) {
+                haptic('error');
+                showToast('Не удалось скопировать');
+            }
+        });
+
+        document.getElementById('btnEditCar').addEventListener('click', () => {
+            if (!currentCar) return;
+            const c = currentCar;
+            document.getElementById('edit_brand').value = c.brand || '';
+            document.getElementById('edit_model').value = c.model || '';
+            document.getElementById('edit_year').value = c.year || '';
+            document.getElementById('edit_license_plate').value = c.license_plate || '';
+            document.getElementById('edit_vin').value = c.vin || '';
+            document.getElementById('edit_mileage').value = c.mileage || '';
+            document.getElementById('edit_engine_volume').value = c.engine_volume || '';
+            document.getElementById('edit_engine_power').value = c.engine_power || '';
+            document.getElementById('edit_fuel_type').value = c.fuel_type || '';
+            document.getElementById('edit_transmission').value = c.transmission || '';
+            document.getElementById('edit_drivetrain').value = c.drivetrain || '';
+            document.getElementById('edit_body_type').value = c.body_type || '';
+            document.getElementById('edit_sts_number').value = c.sts_number || '';
+            document.getElementById('edit_pts_number').value = c.pts_number || '';
+            document.getElementById('carDetailView').style.display = 'none';
+            document.getElementById('carDetailEdit').style.display = 'block';
+            document.getElementById('carDetailCloseRow').style.display = 'none';
+            document.getElementById('carDetailHint').style.display = 'none';
+            haptic('light');
+        });
+
+        document.getElementById('btnCancelCarEdit').addEventListener('click', () => {
+            document.getElementById('carDetailView').style.display = 'block';
+            document.getElementById('carDetailEdit').style.display = 'none';
+            document.getElementById('carDetailCloseRow').style.display = 'flex';
+        });
+
+        document.getElementById('btnSaveCarEdit').addEventListener('click', async () => {
+            const btn = document.getElementById('btnSaveCarEdit');
+            btn.disabled = true;
+            btn.textContent = 'Сохранение...';
+            try {
+                const getVal = (id) => document.getElementById(id).value.trim();
+                const payload = {
+                    brand: getVal('edit_brand') || null,
+                    model: getVal('edit_model') || null,
+                    year: getVal('edit_year') ? parseInt(getVal('edit_year'), 10) : null,
+                    license_plate: getVal('edit_license_plate') || null,
+                    vin: getVal('edit_vin') || null,
+                    mileage: getVal('edit_mileage') ? parseInt(getVal('edit_mileage'), 10) : null,
+                    engine_volume: getVal('edit_engine_volume') || null,
+                    engine_power: getVal('edit_engine_power') ? parseInt(getVal('edit_engine_power'), 10) : null,
+                    fuel_type: getVal('edit_fuel_type') || null,
+                    transmission: getVal('edit_transmission') || null,
+                    drivetrain: getVal('edit_drivetrain') || null,
+                    body_type: getVal('edit_body_type') || null,
+                    sts_number: getVal('edit_sts_number') || null,
+                    pts_number: getVal('edit_pts_number') || null,
+                };
+                Object.keys(payload).forEach(k => { if (payload[k] === null) delete payload[k]; });
+                const res = await fetch('/api/car', { method: 'PATCH', headers: API_HEADERS, body: JSON.stringify(payload) });
+                if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.detail ? JSON.stringify(err.detail) : 'Ошибка сохранения'); }
+                haptic('success');
+                showToast('Сохранено');
+                closeCarDetail();
+                loadAll();
+            } catch (err) {
+                haptic('error');
+                showToast('Ошибка: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Сохранить';
+            }
+        });
+
+        // ============ ПРОФИЛЬ ============
+        function loadProfileScreen() {
+            const user = tg.initDataUnsafe?.user;
+            if (user) {
+                const first = user.first_name || '';
+                const last = user.last_name || '';
+                const initials = (first.charAt(0) + last.charAt(0)).toUpperCase() || '?';
+                document.getElementById('profileAvatar').textContent = initials;
+                document.getElementById('profileName').textContent = `${first} ${last}`.trim() || 'Пользователь';
+                document.getElementById('profileSub').textContent = user.username ? `@${user.username}` : '';
+            }
+        }
+
+        // ============ ЗАМЕТКИ ============
+        async function loadNotesScreen() {
+            const list = document.getElementById('notesList');
+            list.innerHTML = '<div class="loading">Загрузка...</div>';
+            try {
+                const data = await apiGet('/api/car/notes');
+                renderNotesList(data.notes || []);
+            } catch (e) {
+                list.innerHTML = `<div class="error">Ошибка: ${e.message}</div>`;
+            }
+        }
+
+        function renderNotesList(notes) {
+            const list = document.getElementById('notesList');
+            if (!notes || notes.length === 0) {
+                list.innerHTML = `<div class="empty" style="padding: 30px 20px;"><div class="empty__text">Пока нет заметок. Напиши первую выше.</div></div>`;
+                return;
+            }
+            const fmt = (s) => { const d = new Date(s.replace(' ', 'T')); if (isNaN(d)) return s; return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }); };
+            list.innerHTML = notes.map(n => `
+                <div class="note-card" data-note-id="${n.id}">
+                    <div class="note-card__date t-meta">${fmt(n.created_at)}</div>
+                    <div class="note-card__text">${escapeHtml(n.text)}</div>
+                    <div class="note-card__actions">
+                        <button class="icon-btn note-card__btn" data-action="edit" data-note-id="${n.id}">${ICONS.wrench}</button>
+                        <button class="icon-btn note-card__btn" data-action="delete" data-note-id="${n.id}">${ICONS.trash}</button>
+                    </div>
+                </div>
+            `).join('');
+            list.querySelectorAll('.note-card__btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(btn.dataset.noteId, 10);
+                    const action = btn.dataset.action;
+                    if (action === 'delete') deleteNote(id);
+                    else if (action === 'edit') editNote(id, notes);
+                });
+            });
+        }
+
+        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+
+        async function deleteNote(noteId) {
+            if (!confirm('Удалить эту заметку?')) return;
+            try {
+                const res = await fetch(`/api/car/notes/${noteId}`, { method: 'DELETE', headers: API_HEADERS });
+                if (!res.ok) throw new Error('Не удалось удалить');
+                haptic('success'); showToast('Удалено'); loadNotesScreen();
+            } catch (e) { haptic('error'); showToast('Ошибка: ' + e.message); }
+        }
+
+        async function editNote(noteId, notes) {
+            const note = notes.find(n => n.id === noteId);
+            if (!note) return;
+            const newText = prompt('Редактировать заметку:', note.text);
+            if (newText === null || !newText.trim()) return;
+            try {
+                const res = await fetch(`/api/car/notes/${noteId}`, { method: 'PATCH', headers: API_HEADERS, body: JSON.stringify({ text: newText.trim() }) });
+                if (!res.ok) throw new Error('Не удалось сохранить');
+                haptic('success'); showToast('Сохранено'); loadNotesScreen();
+            } catch (e) { haptic('error'); showToast('Ошибка: ' + e.message); }
+        }
+
+        document.getElementById('menuNotes').addEventListener('click', () => showScreen('notes'));
+        document.getElementById('btnBackFromNotes').addEventListener('click', () => showScreen('profile'));
+
+        document.getElementById('btnAddNote').addEventListener('click', async () => {
+            const textarea = document.getElementById('newNoteTextarea');
+            const text = textarea.value.trim();
+            if (!text) return;
+            const btn = document.getElementById('btnAddNote');
+            btn.disabled = true; btn.textContent = 'Добавление...';
+            try {
+                const res = await fetch('/api/car/notes', { method: 'POST', headers: API_HEADERS, body: JSON.stringify({ text }) });
+                if (!res.ok) throw new Error('Не удалось добавить');
+                haptic('success'); showToast('Добавлено'); textarea.value = ''; loadNotesScreen();
+            } catch (e) { haptic('error'); showToast('Ошибка: ' + e.message); }
+            finally { btn.disabled = false; btn.textContent = 'Добавить'; }
+        });
+
+        // ============ AI-ЧАТ ============
+        const aiMessages = document.getElementById('aiMessages');
+        const aiInput = document.getElementById('aiInput');
+        const btnAiSend = document.getElementById('btnAiSend');
+        let aiHistory = [];
+        let aiLoading = false;
+
+        async function openAiChat() {
+            document.getElementById('app').style.display = 'none';
+            document.getElementById('recordsScreen').classList.remove('active');
+            document.getElementById('profileScreen').classList.remove('active');
+            document.getElementById('notesScreen').classList.remove('active');
+            document.getElementById('aiScreen').classList.add('active');
+            document.getElementById('mainNav').style.display = 'none';
+            document.body.style.overflow = 'hidden';
+
+            aiMessages.innerHTML = '<div class="loading">Загрузка...</div>';
+            try {
+                const data = await apiGet('/api/ai/history');
+                aiHistory = data.messages || [];
+                renderAiHistory();
+            } catch (e) {
+                aiMessages.innerHTML = `<div class="error">Ошибка: ${e.message}</div>`;
+            }
+        }
+
+        function renderAiHistory() {
+            if (aiHistory.length === 0) {
+                aiMessages.innerHTML = `
+                    <div class="ai-empty">
+                        <div class="ai-empty__icon">${ICONS.sparkle}</div>
+                        <div class="ai-empty__title">Привет, я Талос!</div>
+                        <div class="ai-empty__text">Твой личный бронзовый страж и автомеханик. Я помню всю историю твоей машины. Спрашивай о чём угодно.</div>
+                        <div class="ai-quick-questions">
+                            <button class="ai-quick-btn" data-q="Когда я последний раз менял масло?">Когда последняя замена масла?</button>
+                            <button class="ai-quick-btn" data-q="Сколько я потратил на топливо в этом месяце?">Сколько ушло на топливо?</button>
+                            <button class="ai-quick-btn" data-q="На что мне обратить внимание при текущем пробеге?">Что требует внимания?</button>
+                        </div>
+                    </div>
+                `;
+                aiMessages.querySelectorAll('.ai-quick-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        aiInput.value = btn.dataset.q;
+                        sendAiMessage();
+                    });
+                });
+                return;
+            }
+            aiMessages.innerHTML = aiHistory.map(m => {
+                if (m.role === 'user') {
+                    return `<div class="ai-bubble ai-bubble--user">${escapeHtml(m.content)}</div>`;
+                } else {
+                    return `<div class="ai-bubble ai-bubble--assistant"><div class="ai-bubble__label">Талос</div>${escapeHtml(m.content)}</div>`;
+                }
+            }).join('');
+            aiMessages.scrollTop = aiMessages.scrollHeight;
+        }
+
+        function appendMessage(role, content) {
+            if (aiMessages.querySelector('.ai-empty')) aiMessages.innerHTML = '';
+            const div = document.createElement('div');
+            if (role === 'user') {
+                div.className = 'ai-bubble ai-bubble--user';
+                div.textContent = content;
+            } else {
+                div.className = 'ai-bubble ai-bubble--assistant';
+                div.innerHTML = `<div class="ai-bubble__label">Талос</div>${escapeHtml(content)}`;
+            }
+            aiMessages.appendChild(div);
+            aiMessages.scrollTop = aiMessages.scrollHeight;
+        }
+
+        function appendTyping() {
+            const div = document.createElement('div');
+            div.className = 'ai-bubble ai-bubble--typing';
+            div.id = 'aiTypingBubble';
+            div.textContent = 'Талос думает...';
+            aiMessages.appendChild(div);
+            aiMessages.scrollTop = aiMessages.scrollHeight;
+        }
+
+        function removeTyping() {
+            const t = document.getElementById('aiTypingBubble');
+            if (t) t.remove();
+        }
+
+        async function sendAiMessage() {
+            const text = aiInput.value.trim();
+            if (!text || aiLoading) return;
+            aiLoading = true;
+            btnAiSend.disabled = true;
+            aiInput.value = '';
+            aiInput.style.height = 'auto';
+
+            appendMessage('user', text);
+            appendTyping();
+
+            try {
+                const res = await fetch('/api/ai/chat', { method: 'POST', headers: API_HEADERS, body: JSON.stringify({ message: text }) });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.detail ? JSON.stringify(err.detail) : 'Ошибка сервера');
+                }
+                const data = await res.json();
+                removeTyping();
+                appendMessage('assistant', data.answer);
+            } catch (e) {
+                removeTyping();
+                appendMessage('assistant', 'Извините, произошла ошибка: ' + e.message);
+            } finally {
+                aiLoading = false;
+                btnAiSend.disabled = false;
+            }
+        }
+
+        btnAiSend.addEventListener('click', sendAiMessage);
+        aiInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAiMessage(); }
+        });
+        aiInput.addEventListener('input', () => {
+            aiInput.style.height = 'auto';
+            aiInput.style.height = Math.min(aiInput.scrollHeight, 100) + 'px';
+        });
+
+        document.getElementById('btnAiBack').addEventListener('click', () => {
+            document.getElementById('aiScreen').classList.remove('active');
+            document.getElementById('mainNav').style.display = 'grid';
+            document.getElementById('app').style.display = 'block';
+            document.body.style.overflow = '';
+            document.querySelectorAll('.nav__item').forEach(b => b.classList.remove('nav__item--active'));
+            mainNavBtn.classList.add('nav__item--active');
+            loadAll();
+        });
+
+        document.getElementById('btnAiClear').addEventListener('click', async () => {
+            if (!confirm('Очистить всю историю чата?')) return;
+            try {
+                const res = await fetch('/api/ai/history', { method: 'DELETE', headers: API_HEADERS });
+                if (!res.ok) throw new Error('Не удалось очистить');
+                aiHistory = [];
+                renderAiHistory();
+                haptic('success'); showToast('История очищена');
+            } catch (e) { haptic('error'); showToast('Ошибка: ' + e.message); }
+        });
+
+        // ============ ДОКУМЕНТЫ ============
+        const docModalOverlay = document.getElementById('docModalOverlay');
+        const docForm = document.getElementById('docForm');
+
+        function toggleDocExpiresField() {
+            const type = document.getElementById('doc_type').value;
+            const wrapper = document.getElementById('docExpiresWrapper');
+            
+            // Если выбран СТС или ПТС — скрываем поле срока действия
+            if (type === 'СТС' || type === 'ПТС') {
+                wrapper.style.display = 'none';
+                document.getElementById('doc_expires').value = ''; // Очищаем значение
+            } else {
+                wrapper.style.display = 'block';
+            }
+        }
+
+        // Слушаем изменение выпадающего списка
+        document.getElementById('doc_type').addEventListener('change', toggleDocExpiresField);
+
+        async function loadDocumentsScreen() {
+            const list = document.getElementById('documentsList');
+            list.innerHTML = '<div class="loading">Загрузка...</div>';
+            try {
+                const data = await apiGet('/api/documents');
+                renderDocumentsList(data.documents || []);
+            } catch (e) {
+                list.innerHTML = `<div class="error">Ошибка: ${e.message}</div>`;
+            }
+        }
+
+        function renderDocumentsList(docs) {
+            const list = document.getElementById('documentsList');
+            if (!docs || docs.length === 0) {
+                list.innerHTML = `<div class="empty"><div class="empty__title">Пока пусто</div><div class="empty__text">Нажми «+» вверху, чтобы добавить документ.</div></div>`;
+                return;
+            }
+
+            list.innerHTML = docs.map(d => {
+                // Проверяем статус
+                let statusText = 'Нет данных о сроке';
+                let statusColor = 'var(--text-dim)';
+                
+                if (d.expires_at) {
+                    const today = new Date();
+                    const expires = new Date(d.expires_at);
+                    const diffDays = Math.ceil((expires - today) / (1000 * 60 * 60 * 24));
+
+                    if (diffDays < 0) {
+                        statusText = 'Просрочен';
+                        statusColor = 'var(--danger)';
+                    } else if (diffDays <= 30) {
+                        statusText = `Истекает через ${diffDays} дн.`;
+                        statusColor = 'var(--warning)';
+                    } else {
+                        statusText = 'Активен';
+                        statusColor = 'var(--success)';
+                    }
+                }
+
+                return `
+                    <div class="doc-card">
+                        <div class="doc-card__icon">
+                            ${ICONS.note}
+                        </div>
+                        <div class="doc-card__content">
+                            <div class="doc-card__title">${d.type}</div>
+                            <div class="doc-card__sub">${d.number || 'Без номера'}</div>
+                            <div class="doc-card__status">
+                                <div class="doc-card__dot" style="background: ${statusColor};"></div>
+                                ${statusText} ${d.expires_at ? `(до ${formatDate(d.expires_at)})` : ''}
+                            </div>
+                        </div>
+                        <button class="doc-card__delete" onclick="deleteDocument(${d.id})">
+                            ${ICONS.trash}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('btnAddDoc').addEventListener('click', () => {
+            docForm.reset();
+            toggleDocExpiresField(); // Проверяем текущее выбранное значение (по умолчанию СТС)
+            docModalOverlay.classList.add('open');
+        });
+
+        document.getElementById('btnCancelDoc').addEventListener('click', () => {
+            docModalOverlay.classList.remove('open');
+        });
+
+        docModalOverlay.addEventListener('click', (e) => {
+            if (e.target === docModalOverlay) docModalOverlay.classList.remove('open');
+        });
+
+        docForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSaveDoc');
+            btn.disabled = true;
+            btn.textContent = 'Сохранение...';
+
+            const payload = {
+                type: document.getElementById('doc_type').value,
+                number: document.getElementById('doc_number').value.trim() || null,
+                issued_at: document.getElementById('doc_issued').value || null,
+                expires_at: document.getElementById('doc_expires').value || null,
+            };
+
+            try {
+                await apiPost('/api/documents', payload);
+                haptic('success');
+                showToast('Документ добавлен');
+                docModalOverlay.classList.remove('open');
+                loadDocumentsScreen();
+            } catch (err) {
+                haptic('error');
+                showToast('Ошибка: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Сохранить';
+            }
+        });
+
+        window.deleteDocument = async (docId) => {
+            if (!confirm('Удалить этот документ?')) return;
+            try {
+                const res = await fetch(`/api/documents/${docId}`, { method: 'DELETE', headers: API_HEADERS });
+                if (!res.ok) throw new Error('Не удалось удалить');
+                haptic('success');
+                showToast('Удалено');
+                loadDocumentsScreen();
+            } catch (e) {
+                haptic('error');
+                showToast('Ошибка: ' + e.message);
+            }
+        };
+        loadAll();
+
+    </script>
+</body>
+
+</html>
