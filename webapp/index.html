@@ -2127,59 +2127,82 @@
         });
 
         // ============ ЗАГРУЗКА ДАННЫХ ============
+        let viewDate = new Date(); // Текущая дата для переключения месяцев
+
         async function loadAll() {
             try {
-                const [carData, fuelData, recordsData, monthlyData] = await Promise.all([
-                    apiGet('/api/car'), apiGet('/api/stats/fuel'), apiGet('/api/records?limit=5'), apiGet('/api/stats/monthly'),
+                const [carData, recordsData] = await Promise.all([
+                    apiGet('/api/car'), 
+                    apiGet('/api/records?limit=5')
                 ]);
-                render(carData, fuelData, recordsData, monthlyData);
+                
+                if (!carData.car) {
+                    document.getElementById('app').innerHTML = `<div class="page-head"><h1 class="t-page">Моё авто</h1></div><div class="empty"><div class="empty__title">Пока пусто</div><div class="empty__text">Добавь машину через бота — и она появится здесь.</div></div>`;
+                    return;
+                }
+                
+                currentCarMileage = carData.car.mileage || 0;
+                currentCar = carData.car;
+
+                // Отрисовываем каркас страницы
+                renderMainLayout(carData, recordsData);
+                
+                // Запускаем загрузку статистики за месяц
+                await loadMonthStats();
+                
             } catch (e) {
                 document.getElementById('app').innerHTML = `<div class="error">Ошибка: ${e.message}</div>`;
             }
         }
 
-        function renderExpenseChart(months) {
-            if (!months || months.length === 0) return Array.from({ length: 6 }, () => `<div class="expenses__bar" style="height:6px;"></div>`).join('');
-            const max = Math.max(...months.map(m => m.total), 1);
-            const last = months.length - 1;
-            return months.map((m, i) => {
-                const height = m.total > 0 ? Math.max((m.total / max) * 32, 4) : 4;
-                const active = i === last && m.total > 0;
-                return `<div class="expenses__bar ${active ? 'active' : ''}" style="height:${height}px;" title="${m.label}: ${formatMoney(m.total)} руб."></div>`;
-            }).join('');
-        }
-
-        function renderOilReminder(data, intervalKm) {
-            if (!data) {
-                if (intervalKm) {
-                    return `<div class="reminder-card"><div class="reminder-card__label t-caps">Ближайшее ТО</div><div class="reminder-card__title">Запиши замену масла</div><div class="reminder-card__subtitle">Нажми «ТО» → «Замена масла»</div></div>`;
+        async function loadMonthStats() {
+            const y = viewDate.getFullYear();
+            const m = viewDate.getMonth() + 1;
+            
+            try {
+                const [statsData, monthlyData] = await Promise.all([
+                    apiGet(`/api/stats/month?year=${y}&month=${m}`),
+                    apiGet(`/api/stats/monthly?year=${y}&month=${m}`)
+                ]);
+                
+                const monthTotalEl = document.getElementById('monthTotal');
+                if (monthTotalEl) monthTotalEl.textContent = formatMoney(statsData.total_cost);
+                
+                let fuelText = `Топливо: ${statsData.total_liters} л`;
+                if (statsData.fuel_cost > 0) fuelText += ` (${formatMoney(statsData.fuel_cost)} ₽)`;
+                if (statsData.avg_consumption) fuelText += ` · ${statsData.avg_consumption} л/100 км`;
+                
+                const fuelMetaEl = document.getElementById('fuelMeta');
+                if (fuelMetaEl) fuelMetaEl.textContent = fuelText;
+                
+                const chartEl = document.getElementById('expenseChart');
+                if (chartEl) chartEl.innerHTML = renderExpenseChart(monthlyData.months);
+                
+                const monthNames = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
+                const now = new Date();
+                const isCurrent = (y === now.getFullYear() && m === (now.getMonth() + 1));
+                
+                const monthLabelEl = document.getElementById('monthLabel');
+                if (monthLabelEl) {
+                    monthLabelEl.textContent = isCurrent ? "Расходы в этом месяце" : `Расходы за ${monthNames[m-1]} ${y !== now.getFullYear() ? y : ''}`;
                 }
-                return `<div class="reminder-card"><div class="reminder-card__label t-caps">Ближайшее ТО</div><div class="reminder-card__title">Настроить интервал</div><div class="reminder-card__subtitle">Открой бота → «⚙️ Настроить ТО»</div></div>`;
+                
+                const nextBtn = document.getElementById('nextMonthBtn');
+                if (nextBtn) {
+                    nextBtn.style.opacity = isCurrent ? '0.3' : '1';
+                    nextBtn.disabled = isCurrent;
+                }
+                
+            } catch (e) {
+                console.error('Ошибка загрузки статистики', e);
             }
-            const km = data.km_left;
-            let valueText; let stateColor = 'var(--gold)';
-            if (km < 0) { valueText = `Просрочено на ${Math.abs(km).toLocaleString('ru-RU')} км`; stateColor = 'var(--danger)'; }
-            else if (km > 3000) { const rounded = Math.round(km / 1000) * 1000; valueText = `~${rounded.toLocaleString('ru-RU')} км`; }
-            else if (km > 1000) { const rounded = Math.round(km / 100) * 100; valueText = `~${rounded.toLocaleString('ru-RU')} км`; stateColor = 'var(--warning)'; }
-            else { valueText = `${km.toLocaleString('ru-RU')} км`; stateColor = 'var(--warning)'; }
-            return `<div class="reminder-card" style="border-left-color:${stateColor};"><div class="reminder-card__label t-caps" style="color:${stateColor};">Ближайшее ТО</div><div class="reminder-card__title">Замена масла</div><div class="reminder-card__subtitle">${valueText}</div></div>`;
         }
 
-        function render(carData, fuelData, recordsData, monthlyData) {
+        function renderMainLayout(carData, recordsData) {
             const app = document.getElementById('app');
-            if (!carData.car) {
-                app.innerHTML = `<div class="page-head"><h1 class="t-page">Моё авто</h1></div><div class="empty"><div class="empty__title">Пока пусто</div><div class="empty__text">Добавь машину через бота — и она появится здесь.</div></div>`;
-                return;
-            }
             const c = carData.car;
-            currentCarMileage = c.mileage || 0;
-            currentCar = c;
             const mileage = (c.mileage || 0).toLocaleString('ru-RU');
-            const fuelCost = formatMoney(fuelData.total_cost);
-            const fuelLiters = fuelData.total_liters || 0;
-            const fuelAvg = fuelData.avg_consumption;
-            let fuelMeta = `${fuelLiters} л`;
-            if (fuelAvg) fuelMeta += ` · ${fuelAvg} л/100 км`;
+            
             const reminderHtml = renderOilReminder(carData.next_oil_change, c.oil_interval_km);
             const logoUrl = getBrandLogoUrl(c.brand);
             const carVisual = carData.photo_url ? `<img class="car-photo" src="${carData.photo_url}" alt="">` : (logoUrl ? `<img class="car-logo" src="${logoUrl}" alt="">` : '');
@@ -2198,7 +2221,20 @@
             }
 
             app.innerHTML = `
-                <div class="page-head"><h1 class="t-page">Моё авто</h1></div>
+                <div class="page-head" style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 32px; height: 32px; color: var(--gold);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%" fill="none">
+                            <path d="M50 8 L82 22 L82 55 C82 75 50 92 50 92 C50 92 18 75 18 55 L18 22 Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" />
+                            <path d="M26 48 A 26 26 0 0 1 74 48" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                            <line x1="50" y1="24" x2="50" y2="30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                            <line x1="32" y1="32" x2="36" y2="36" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                            <line x1="68" y1="32" x2="64" y2="36" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                            <line x1="50" y1="55" x2="68" y2="37" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                            <circle cx="50" cy="55" r="3" fill="currentColor" />
+                        </svg>
+                    </div>
+                    <h1 class="t-page" style="margin: 0;">Моё авто</h1>
+                </div>
                 <div class="car-card">
                     ${carVisual}
                     <div class="car-card__header">
@@ -2217,10 +2253,14 @@
                     <button class="tile" data-record-type="expense">${ICONS.coin}<span>Расход</span></button>
                 </div>
                 <div class="expenses">
-                    <div class="t-section">Расходы в этом месяце</div>
-                    <div class="expenses__amount"><span class="t-amount">${fuelCost}</span><span class="expenses__currency">₽</span></div>
-                    <div class="expenses__chart">${renderExpenseChart(monthlyData.months)}</div>
-                    <div class="t-meta" style="margin-top:10px;">Топливо: ${fuelMeta}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <button id="prevMonthBtn" style="background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer;">‹</button>
+                        <div class="t-section" id="monthLabel">Расходы в этом месяце</div>
+                        <button id="nextMonthBtn" style="background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer;">›</button>
+                    </div>
+                    <div class="expenses__amount"><span class="t-amount" id="monthTotal">0</span><span class="expenses__currency">₽</span></div>
+                    <div class="expenses__chart" id="expenseChart"></div>
+                    <div class="t-meta" style="margin-top:10px;" id="fuelMeta"></div>
                 </div>
                 <div class="records">
                     <div class="records__header"><span class="t-section">Последние записи</span><button class="records__all">Все ›</button></div>
@@ -2236,17 +2276,22 @@
             document.querySelectorAll('[data-record-type]').forEach(btn => btn.addEventListener('click', () => openModal(btn.dataset.recordType)));
             document.getElementById('openAiCard').addEventListener('click', openAiChat);
 
-            // Обработчики кнопок переключения месяцев
-            document.getElementById('prevMonthBtn').addEventListener('click', () => {
-                viewDate.setMonth(viewDate.getMonth() - 1);
-                loadMonthStats();
-            });
-
-            document.getElementById('nextMonthBtn').addEventListener('click', () => {
-                if (document.getElementById('nextMonthBtn').disabled) return;
-                viewDate.setMonth(viewDate.getMonth() + 1);
-                loadMonthStats();
-            });
+            const prevBtn = document.getElementById('prevMonthBtn');
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    viewDate.setMonth(viewDate.getMonth() - 1);
+                    loadMonthStats();
+                });
+            }
+            
+            const nextBtn = document.getElementById('nextMonthBtn');
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    if (nextBtn.disabled) return;
+                    viewDate.setMonth(viewDate.getMonth() + 1);
+                    loadMonthStats();
+                });
+            }
         }
 
         // ============ НАВИГАЦИЯ ============
