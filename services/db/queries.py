@@ -320,6 +320,17 @@ async def get_fuel_stats(car_id: int, year: int, month: int) -> dict[str, Any]:
         "avg_consumption": avg,
     }
 
+async def get_month_total_expenses(car_id: int, year: int, month: int) -> float:
+    """Возвращает сумму ВСЕХ расходов за конкретный месяц."""
+    db = await get_db()
+    mask = f"{year:04d}-{month:02d}%"
+    async with db.execute(
+        "SELECT COALESCE(SUM(cost), 0) as total FROM records WHERE car_id = ? AND date LIKE ?",
+        (car_id, mask),
+    ) as cursor:
+        row = await cursor.fetchone()
+        return float(row["total"])
+
 
 async def get_monthly_expenses(car_id: int, months: int = 6) -> list[dict]:
     """Возвращает сумму расходов по месяцам за последние N месяцев."""
