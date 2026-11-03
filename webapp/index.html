@@ -2989,6 +2989,34 @@
                 showToast('Ошибка: ' + e.message);
             }
         };
+
+                function renderExpenseChart(months) {
+            if (!months || months.length === 0) return Array.from({ length: 6 }, () => `<div class="expenses__bar" style="height:6px;"></div>`).join('');
+            const max = Math.max(...months.map(m => m.total), 1);
+            const last = months.length - 1;
+            return months.map((m, i) => {
+                const height = m.total > 0 ? Math.max((m.total / max) * 32, 4) : 4;
+                const active = i === last && m.total > 0;
+                return `<div class="expenses__bar ${active ? 'active' : ''}" style="height:${height}px;" title="${m.label}: ${formatMoney(m.total)} руб."></div>`;
+            }).join('');
+        }
+
+        function renderOilReminder(data, intervalKm) {
+            if (!data) {
+                if (intervalKm) {
+                    return `<div class="reminder-card"><div class="reminder-card__label t-caps">Ближайшее ТО</div><div class="reminder-card__title">Запиши замену масла</div><div class="reminder-card__subtitle">Нажми «ТО» → «Замена масла»</div></div>`;
+                }
+                return `<div class="reminder-card"><div class="reminder-card__label t-caps">Ближайшее ТО</div><div class="reminder-card__title">Настроить интервал</div><div class="reminder-card__subtitle">Открой бота → «⚙️ Настроить ТО»</div></div>`;
+            }
+            const km = data.km_left;
+            let valueText; let stateColor = 'var(--gold)';
+            if (km < 0) { valueText = `Просрочено на ${Math.abs(km).toLocaleString('ru-RU')} км`; stateColor = 'var(--danger)'; }
+            else if (km > 3000) { const rounded = Math.round(km / 1000) * 1000; valueText = `~${rounded.toLocaleString('ru-RU')} км`; }
+            else if (km > 1000) { const rounded = Math.round(km / 100) * 100; valueText = `~${rounded.toLocaleString('ru-RU')} км`; stateColor = 'var(--warning)'; }
+            else { valueText = `${km.toLocaleString('ru-RU')} км`; stateColor = 'var(--warning)'; }
+            return `<div class="reminder-card" style="border-left-color:${stateColor};"><div class="reminder-card__label t-caps" style="color:${stateColor};">Ближайшее ТО</div><div class="reminder-card__title">Замена масла</div><div class="reminder-card__subtitle">${valueText}</div></div>`;
+        }
+        
         loadAll();
 
     </script>
