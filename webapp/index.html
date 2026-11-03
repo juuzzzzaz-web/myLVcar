@@ -2235,6 +2235,18 @@
 
             document.querySelectorAll('[data-record-type]').forEach(btn => btn.addEventListener('click', () => openModal(btn.dataset.recordType)));
             document.getElementById('openAiCard').addEventListener('click', openAiChat);
+
+            // Обработчики кнопок переключения месяцев
+            document.getElementById('prevMonthBtn').addEventListener('click', () => {
+                viewDate.setMonth(viewDate.getMonth() - 1);
+                loadMonthStats();
+            });
+
+            document.getElementById('nextMonthBtn').addEventListener('click', () => {
+                if (document.getElementById('nextMonthBtn').disabled) return;
+                viewDate.setMonth(viewDate.getMonth() + 1);
+                loadMonthStats();
+            });
         }
 
         // ============ НАВИГАЦИЯ ============
