@@ -1,4 +1,4 @@
-"""Точка входа: запуск бота MyCar и FastAPI сервера одновременно. """
+"""Точка входа: запуск бота MyCar и FastAPI сервера одновременно."""
 import asyncio
 import logging
 import os
