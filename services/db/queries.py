@@ -552,3 +552,29 @@ async def delete_document(doc_id: int) -> bool:
     )
     await db.commit()
     return cursor.rowcount > 0
+
+# ============ АНАЛИТИКА ============
+
+async def log_event(user_id: int, event_name: str) -> None:
+    """Записывает событие в базу для статистики."""
+    db = await get_db()
+    await db.execute(
+        "INSERT INTO analytics_events (user_id, event_name) VALUES (?, ?)",
+        (user_id, event_name)
+    )
+    await db.commit()
+
+async def get_analytics_summary() -> dict:
+    """Возвращает краткую сводку по событиям."""
+    db = await get_db()
+    summary = {}
+    
+    async with db.execute("SELECT COUNT(DISTINCT user_id) FROM analytics_events") as cursor:
+        row = await cursor.fetchone()
+        summary["unique_users"] = row[0] if row else 0
+
+    async with db.execute("SELECT event_name, COUNT(*) FROM analytics_events GROUP BY event_name") as cursor:
+        rows = await cursor.fetchall()
+        summary["events"] = {row[0]: row[1] for row in rows}
+        
+    return summary
