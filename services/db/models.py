@@ -14,6 +14,18 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Таблица для аналитики и событий
+CREATE TABLE IF NOT EXISTS analytics_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    event_name TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Индексы для аналитики
+CREATE INDEX IF NOT EXISTS idx_events_user ON analytics_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_events_name ON analytics_events(event_name);
+
 -- Машины пользователя
 CREATE TABLE IF NOT EXISTS cars (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,14 +92,6 @@ CREATE TABLE IF NOT EXISTS reminders (
     FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE CASCADE
 );
 
--- Индексы для быстрого поиска
-CREATE INDEX IF NOT EXISTS idx_cars_user ON cars(user_id);
-CREATE INDEX IF NOT EXISTS idx_records_car ON records(car_id);
-CREATE INDEX IF NOT EXISTS idx_records_type ON records(type);
-CREATE INDEX IF NOT EXISTS idx_records_date ON records(date);
-CREATE INDEX IF NOT EXISTS idx_documents_car ON documents(car_id);
-CREATE INDEX IF NOT EXISTS idx_reminders_car ON reminders(car_id);
-
 -- Заметки о машине (отдельные записи)
 CREATE TABLE IF NOT EXISTS car_notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -96,8 +100,6 @@ CREATE TABLE IF NOT EXISTS car_notes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE CASCADE
 );
-
-CREATE INDEX IF NOT EXISTS idx_car_notes_car ON car_notes(car_id);
 
 -- История AI-диалога
 CREATE TABLE IF NOT EXISTS ai_messages (
@@ -109,5 +111,13 @@ CREATE TABLE IF NOT EXISTS ai_messages (
     FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE CASCADE
 );
 
+-- Индексы для быстрого поиска
+CREATE INDEX IF NOT EXISTS idx_cars_user ON cars(user_id);
+CREATE INDEX IF NOT EXISTS idx_records_car ON records(car_id);
+CREATE INDEX IF NOT EXISTS idx_records_type ON records(type);
+CREATE INDEX IF NOT EXISTS idx_records_date ON records(date);
+CREATE INDEX IF NOT EXISTS idx_documents_car ON documents(car_id);
+CREATE INDEX IF NOT EXISTS idx_reminders_car ON reminders(car_id);
+CREATE INDEX IF NOT EXISTS idx_car_notes_car ON car_notes(car_id);
 CREATE INDEX IF NOT EXISTS idx_ai_messages_car ON ai_messages(car_id);
 """

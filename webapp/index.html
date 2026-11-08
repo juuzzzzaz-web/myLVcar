@@ -674,11 +674,9 @@
 
         .filters {
             display: flex;
+            flex-wrap: wrap; /* Позволяет кнопкам переноситься на новую строку */
             gap: 8px;
-            overflow-x: auto;
             padding: 0 20px 16px;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
         }
 
         .filters::-webkit-scrollbar {
@@ -1538,10 +1536,10 @@
             <div class="profile-info__sub" id="profileSub"></div>
         </div>
         <div class="profile-menu">
+            <!-- Заметки -->
             <button class="profile-menu__item" id="menuNotes">
                 <span class="profile-menu__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                        stroke-linejoin="round">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                         <polyline points="14 2 14 8 20 8" />
                         <line x1="16" y1="13" x2="8" y2="13" />
@@ -1551,10 +1549,11 @@
                 <span class="profile-menu__text">Заметки о машине</span>
                 <span class="profile-menu__arrow">›</span>
             </button>
+
+            <!-- Уведомления -->
             <button class="profile-menu__item" disabled style="opacity: 0.4;">
                 <span class="profile-menu__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                        stroke-linejoin="round">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z" />
                         <path d="M10 20a2 2 0 0 0 4 0" />
                     </svg>
@@ -1562,10 +1561,34 @@
                 <span class="profile-menu__text">Уведомления</span>
                 <span class="profile-menu__arrow">›</span>
             </button>
-            <button class="profile-menu__item" disabled style="opacity: 0.4;">
+
+            <!-- Инструкция -->
+            <button class="profile-menu__item" id="menuInstructions">
                 <span class="profile-menu__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                        stroke-linejoin="round">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    </svg>
+                </span>
+                <span class="profile-menu__text">Инструкция</span>
+                <span class="profile-menu__arrow">›</span>
+            </button>
+
+            <!-- Поддержать проект -->
+            <button class="profile-menu__item" id="menuDonate">
+                <span class="profile-menu__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                </span>
+                <span class="profile-menu__text">Поддержать проект</span>
+                <span class="profile-menu__arrow">›</span>
+            </button>
+
+            <!-- О приложении -->
+            <button class="profile-menu__item" id="menuAbout">
+                <span class="profile-menu__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10" />
                         <line x1="12" y1="16" x2="12" y2="12" />
                         <line x1="12" y1="8" x2="12.01" y2="8" />
@@ -1905,6 +1928,144 @@
         </div>
     </div>
 
+    <!-- МОДАЛКА ИНСТРУКЦИИ -->
+    <div class="modal-overlay" id="instructionsModal">
+        <div class="modal">
+            <div class="modal__handle"></div>
+            <div class="modal__title">Как пользоваться</div>
+            <div style="font-size: 14px; line-height: 1.6; color: var(--text-muted); margin-bottom: 20px;">
+                <p style="margin-bottom: 12px;"><b style="color: var(--text);">1. Данные авто</b><br>Нажми на карточку машины на главной, чтобы заполнить VIN, пробег и характеристики. Чем больше данных, тем умнее Талос.</p>
+                <p style="margin-bottom: 12px;"><b style="color: var(--text);">2. Расходы и ТО</b><br>Используй плитки на главном экране (Топливо, ТО, Запчасти) для внесения трат. Система сама посчитает статистику.</p>
+                <p style="margin-bottom: 12px;"><b style="color: var(--text);">3. Общение с Талосом</b><br>Открой карточку AI-помощника. Спрашивай про замену масла, ищи аналоги запчастей и проверяй честность сервисов.</p>
+                <p><b style="color: var(--text);">4. Документы</b><br>Сохраняй ОСАГО и СТС во вкладке «Документы». Бот напомнит, когда придет время продлевать.</p>
+            </div>
+            <div class="modal__actions">
+                <button type="button" class="btn btn--primary" id="btnCloseInstructions">Понятно</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- МОДАЛКА О ПРИЛОЖЕНИИ -->
+    <div class="modal-overlay" id="aboutModal">
+        <div class="modal" style="text-align: center;">
+            <div class="modal__handle"></div>
+            
+            <!-- Логотип -->
+            <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+                <div style="width: 64px; height: 64px; color: var(--gold);">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%" fill="none">
+                        <path d="M50 8 L82 22 L82 55 C82 75 50 92 50 92 C50 92 18 75 18 55 L18 22 Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" />
+                        <path d="M26 48 A 26 26 0 0 1 74 48" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                        <line x1="50" y1="24" x2="50" y2="30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                        <line x1="32" y1="32" x2="36" y2="36" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                        <line x1="68" y1="32" x2="64" y2="36" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                        <line x1="50" y1="55" x2="68" y2="37" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                        <circle cx="50" cy="55" r="3" fill="currentColor" />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="modal__title" style="margin-bottom: 4px;">MyCar</div>
+            <div class="t-caps" style="margin-bottom: 24px;">Версия 1.0.0 Beta</div>
+            
+            <div style="font-size: 14px; line-height: 1.6; color: var(--text-muted); margin-bottom: 24px; padding: 0 10px;">
+                Премиальный дневник ухода за автомобилем.<br><br>
+                Ваша машина помнит всё. MyCar — тоже.<br>
+                Талос — ваш личный бронзовый страж и автомеханик, который всегда на связи.
+            </div>
+            
+            <div style="font-size: 13px; color: var(--text-dim); margin-bottom: 24px;">
+                Разработчик: <a href="#" id="devLink" style="color: var(--gold); text-decoration: none; font-weight: 600;">@SamiySladenkiy</a>
+            </div>
+            
+            <div class="modal__actions">
+                <button type="button" class="btn btn--primary" id="btnCloseAbout">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- МОДАЛКА О ПРИЛОЖЕНИИ -->
+    <div class="modal-overlay" id="aboutModal">
+        <div class="modal" style="text-align: center;">
+            <div class="modal__handle"></div>
+            
+            <!-- Логотип -->
+            <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+                <div style="width: 64px; height: 64px; color: var(--gold);">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%" fill="none">
+                        <path d="M50 8 L82 22 L82 55 C82 75 50 92 50 92 C50 92 18 75 18 55 L18 22 Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" />
+                        <path d="M26 48 A 26 26 0 0 1 74 48" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                        <line x1="50" y1="24" x2="50" y2="30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                        <line x1="32" y1="32" x2="36" y2="36" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                        <line x1="68" y1="32" x2="64" y2="36" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                        <line x1="50" y1="55" x2="68" y2="37" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                        <circle cx="50" cy="55" r="3" fill="currentColor" />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="modal__title" style="margin-bottom: 4px;">MyCar</div>
+            <div class="t-caps" style="margin-bottom: 24px;">Версия 1.0.0 Beta</div>
+            
+            <div style="font-size: 14px; line-height: 1.6; color: var(--text-muted); margin-bottom: 24px; padding: 0 10px;">
+                Премиальный дневник ухода за автомобилем.<br><br>
+                Ваша машина помнит всё. MyCar — тоже.<br>
+                Талос — ваш личный бронзовый страж и автомеханик, который всегда на связи.
+            </div>
+            
+            <div style="font-size: 13px; color: var(--text-dim); margin-bottom: 24px;">
+                Разработчик: <a href="#" id="devLink" style="color: var(--gold); text-decoration: none; font-weight: 600;">@SamiySladenkiy</a>
+            </div>
+            
+            <div class="modal__actions">
+                <button type="button" class="btn btn--primary" id="btnCloseAbout">Закрыть</button>
+            </div>
+        </div>
+    </div>
+    <!-- МОДАЛКА О ПРИЛОЖЕНИИ -->
+    <div class="modal-overlay" id="aboutModal">
+        <div class="modal" style="text-align: center;">
+            <div class="modal__handle"></div>
+    
+            <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+                <div style="width: 64px; height: 64px; color: var(--gold);">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%" fill="none">
+                        <path d="M50 8 L82 22 L82 55 C82 75 50 92 50 92 C50 92 18 75 18 55 L18 22 Z" stroke="currentColor"
+                            stroke-width="2.5" stroke-linejoin="round" />
+                        <path d="M26 48 A 26 26 0 0 1 74 48" stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" />
+                        <line x1="50" y1="24" x2="50" y2="30" stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" />
+                        <line x1="32" y1="32" x2="36" y2="36" stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" />
+                        <line x1="68" y1="32" x2="64" y2="36" stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" />
+                        <line x1="50" y1="55" x2="68" y2="37" stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" />
+                        <circle cx="50" cy="55" r="3" fill="currentColor" />
+                    </svg>
+                </div>
+            </div>
+    
+            <div class="modal__title" style="margin-bottom: 4px;">MyCar</div>
+            <div class="t-caps" style="margin-bottom: 24px;">Версия 1.0.0 Beta</div>
+    
+            <div style="font-size: 14px; line-height: 1.6; color: var(--text-muted); margin-bottom: 24px; padding: 0 10px;">
+                Премиальный дневник ухода за автомобилем.<br><br>
+                Ваша машина помнит всё. MyCar — тоже.<br>
+                Талос — ваш личный бронзовый страж и автомеханик, который всегда на связи.
+            </div>
+    
+            <div style="font-size: 13px; color: var(--text-dim); margin-bottom: 24px;">
+                Разработчик: <a href="#" id="devLink"
+                    style="color: var(--gold); text-decoration: none; font-weight: 600;">@SamiySladenkiy</a>
+            </div>
+    
+            <div class="modal__actions">
+                <button type="button" class="btn btn--primary" id="btnCloseAbout">Закрыть</button>
+            </div>
+        </div>
+    </div>
     <div class="toast" id="toast"></div>
 
     <script>
@@ -3016,7 +3177,59 @@
             else { valueText = `${km.toLocaleString('ru-RU')} км`; stateColor = 'var(--warning)'; }
             return `<div class="reminder-card" style="border-left-color:${stateColor};"><div class="reminder-card__label t-caps" style="color:${stateColor};">Ближайшее ТО</div><div class="reminder-card__title">Замена масла</div><div class="reminder-card__subtitle">${valueText}</div></div>`;
         }
+
+        // ============ ИНСТРУКЦИЯ И ДОНАТЫ В ПРОФИЛЕ ============
+        const instructionsModal = document.getElementById('instructionsModal');
+
+        document.getElementById('menuInstructions').addEventListener('click', () => {
+            instructionsModal.classList.add('open');
+            haptic('light');
+        });
+
+        document.getElementById('btnCloseInstructions').addEventListener('click', () => {
+            instructionsModal.classList.remove('open');
+        });
+
+        instructionsModal.addEventListener('click', (e) => {
+            if (e.target === instructionsModal) instructionsModal.classList.remove('open');
+        });
+
+        document.getElementById('menuDonate').addEventListener('click', () => {
+            // Открываем ссылку через нативный метод Телеграма (безопасно)
+            tg.openLink('https://www.donationalerts.com/r/samiysladenkiy');
+            haptic('light');
+        });
         
+        // ============ О ПРИЛОЖЕНИИ ============
+        const aboutModal = document.getElementById('aboutModal');
+
+        if (document.getElementById('menuAbout')) {
+            document.getElementById('menuAbout').addEventListener('click', () => {
+                aboutModal.classList.add('open');
+                haptic('light');
+            });
+        }
+
+        if (document.getElementById('btnCloseAbout')) {
+            document.getElementById('btnCloseAbout').addEventListener('click', () => {
+                aboutModal.classList.remove('open');
+            });
+        }
+
+        if (aboutModal) {
+            aboutModal.addEventListener('click', (e) => {
+                if (e.target === aboutModal) aboutModal.classList.remove('open');
+            });
+        }
+
+        if (document.getElementById('devLink')) {
+            document.getElementById('devLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                tg.openLink('https://t.me/SamiySladenkiy');
+                haptic('light');
+            });
+        }
+
         loadAll();
 
     </script>

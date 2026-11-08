@@ -332,20 +332,22 @@ async def get_month_total_expenses(car_id: int, year: int, month: int) -> float:
         return float(row["total"])
 
 
-async def get_monthly_expenses(car_id: int, months: int = 6) -> list[dict]:
-    """Возвращает сумму расходов по месяцам за последние N месяцев."""
+async def get_monthly_expenses(car_id: int, end_year: int, end_month: int, months: int = 6) -> list[dict]:
+    """Возвращает сумму расходов по месяцам. Заканчивается на end_year/end_month."""
     db = await get_db()
-    today = datetime.now()
-
+    # Ставим дату на первое число выбранного месяца
+    current_date = datetime(end_year, end_month, 1)
+    
     result = []
     for i in range(months - 1, -1, -1):
-        first = today.replace(day=1)
+        # Вычисляем начало каждого месяца назад
+        first = current_date
         for _ in range(i):
             first = (first - timedelta(days=1)).replace(day=1)
 
-        year = first.year
-        month = first.month
-        mask = f"{year:04d}-{month:02d}%"
+        y = first.year
+        m = first.month
+        mask = f"{y:04d}-{m:02d}%"
 
         async with db.execute(
             "SELECT COALESCE(SUM(cost), 0) as total FROM records "
@@ -357,10 +359,10 @@ async def get_monthly_expenses(car_id: int, months: int = 6) -> list[dict]:
         month_names = ["янв", "фев", "мар", "апр", "май", "июн",
                        "июл", "авг", "сен", "окт", "ноя", "дек"]
         result.append({
-            "year": year,
-            "month": month,
+            "year": y,
+            "month": m,
             "total": float(row["total"] or 0),
-            "label": month_names[month - 1],
+            "label": month_names[m - 1],
         })
 
     return result

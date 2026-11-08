@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from openai import OpenAI
+from openai import AsyncOpenAI  # <-- Используем асинхронный клиент
 
 from api.auth import validate_init_data
 from services.db.connection import init_db, close_db
@@ -23,6 +23,7 @@ from services.db.queries import (
     update_record,
     delete_record,
     get_monthly_expenses,
+    get_month_total_expenses,
     get_next_oil_change,
     update_car_field,
     add_car_note,
@@ -37,6 +38,8 @@ from services.db.queries import (
     get_documents,
     delete_document,
 )
+
+from services.parts_api import get_part_analogs
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request as StarletteRequest
@@ -235,11 +238,13 @@ async def api_update_car(
 # ============ API: СТАТИСТИКА ============
 
 
-@app.get("/api/stats/fuel")
-async def api_fuel_stats(
+@app.get("/api/stats/month")
+async def api_month_stats(
+    year: int | None = None,
+    month: int | None = None,
     x_init_data: str = Header(..., alias="X-Init-Data"),
 ):
-    """Статистика по топливу за текущий месяц."""
+    """Статистика за конкретный месяц (по умолчанию — текущий)."""
     tg_user = get_telegram_user(x_init_data)
     user = await get_or_create_user(
         telegram_id=tg_user["id"],
@@ -247,19 +252,32 @@ async def api_fuel_stats(
         first_name=tg_user.get("first_name"),
     )
     car = await get_active_car(user["id"])
-    if not car:
-        return {"total_cost": 0, "total_liters": 0, "avg_consumption": None}
+    
+    now = datetime.now()
+    y = year or now.year
+    m = month or now.month
 
-    today = datetime.now()
-    stats = await get_fuel_stats(car["id"], today.year, today.month)
-    return stats
+    if not car:
+        return {"total_cost": 0, "fuel_cost": 0, "total_liters": 0, "avg_consumption": None}
+
+    total_cost = await get_month_total_expenses(car["id"], y, m)
+    fuel_stats = await get_fuel_stats(car["id"], y, m)
+
+    return {
+        "total_cost": total_cost,
+        "fuel_cost": fuel_stats["total_cost"],
+        "total_liters": fuel_stats["total_liters"],
+        "avg_consumption": fuel_stats["avg_consumption"],
+    }
 
 
 @app.get("/api/stats/monthly")
 async def api_monthly_stats(
+    year: int | None = None,
+    month: int | None = None,
     x_init_data: str = Header(..., alias="X-Init-Data"),
 ):
-    """Расходы по месяцам — для графика на главной."""
+    """Расходы по месяцам для графика."""
     tg_user = get_telegram_user(x_init_data)
     user = await get_or_create_user(
         telegram_id=tg_user["id"],
@@ -269,8 +287,12 @@ async def api_monthly_stats(
     car = await get_active_car(user["id"])
     if not car:
         return {"months": []}
+    
+    now = datetime.now()
+    y = year or now.year
+    m = month or now.month
 
-    months = await get_monthly_expenses(car["id"], months=6)
+    months = await get_monthly_expenses(car["id"], y, m, months=6)
     return {"months": months}
 
 
@@ -563,7 +585,8 @@ async def api_ai_chat(
     # Собираем контекст
     notes = await get_car_notes(car["id"])
     records = await get_records(car["id"], limit=50)
-    monthly = await get_monthly_expenses(car["id"], months=6)
+    now = datetime.now()
+    monthly = await get_monthly_expenses(car["id"], now.year, now.month, months=6)
     fuel_stats = await get_fuel_stats(car["id"], datetime.now().year, datetime.now().month)
 
     # Блок «автомобиль»
@@ -607,7 +630,11 @@ async def api_ai_chat(
         "Ты — Талос, AI-помощник по уходу за автомобилем. "
         "Ты опытный автомеханик с 20-летним стажем. Твой характер — как у бронзового стража: "
         "надежный, точный, спокойный и невозмутимый. Общайся на «ты», уверенно, дружелюбно, без лишних эмоций. "
-        "Пиши только простой текст, без Markdown."
+        "Пиши только простой текст, без Markdown.\n"
+        "Если пользователь просит найти запчасть по названию (например, 'датчик температуры'), "
+        "сначала определи её оригинальный OEM-номер на основе данных об автомобиле пользователя. "
+        "Затем ОБЯЗАТЕЛЬНО используй инструмент search_part_analogs, чтобы найти аналоги. "
+        "В ответе напиши оригинальный номер, список лучших аналогов и краткий совет по выбору."
     )
 
     user_content = (
@@ -620,11 +647,9 @@ async def api_ai_chat(
         "ПРАВИЛА ОТВЕТА:\n"
         "1. Отвечай кратко (2-5 предложений). Сначала прямой ответ, затем детали.\n"
         "2. Для вопросов о пробегах, датах, расходах и обслуживании конкретной машины используй только данные из дневника. Если их нет — скажи: «В твоем дневнике этой информации нет».\n"
-        "3. Если вопрос касается общих технических знаний (артикулы, устройство, типичные болезни модели), и этого нет в дневнике — используй свои знания. Обязательно начни ответ с фразы: «В твоем дневнике этой информации нет, но в целом...»\n"
+        "3. Если вопрос касается общих технических знаний (артикулы, устройство, типичные болезни модели), и этого нет в дневнике — используй свои знания.\n"
         "4. Не выдумывай конкретные пробеги, даты и суммы, которых нет в базе.\n"
-        "5. Если видишь противоречие в данных (например, пробег в записи больше текущего) — укажи на это.\n"
-        "6. Не давай юридических советов, не рекламируй конкретные СТО или магазины.\n"
-        "7. Не используй капс и формальные обращения. Пиши как живой человек.\n"
+        "5. Не используй капс и формальные обращения. Пиши как живой человек.\n"
     )
 
     # Получаем последние 10 сообщений из истории
@@ -639,18 +664,77 @@ async def api_ai_chat(
     # Добавляем текущий вопрос с контекстом
     messages.append({"role": "user", "content": user_content})
 
+    # ============ НАСТРОЙКА ИНСТРУМЕНТОВ (FUNCTION CALLING) ============
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "search_part_analogs",
+                "description": "Ищет аналоги автозапчасти по её OEM-номеру или оригинальному артикулу.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "part_number": {
+                            "type": "string",
+                            "description": "Артикул детали (например, 33101547 или 0248L7)"
+                        }
+                    },
+                    "required": ["part_number"]
+                }
+            }
+        }
+    ]
+
     try:
-        client = OpenAI(
+        client = AsyncOpenAI(
             api_key=os.getenv("DEEPSEEK_API_KEY"),
             base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
         )
-        response = client.chat.completions.create(
+        
+        # 1. Первый запрос к DeepSeek (он решает, вызвать ли функцию)
+        response = await client.chat.completions.create(
             model="deepseek-chat",
             messages=messages,
+            tools=tools,
             max_tokens=1000,
             temperature=0.3,
         )
-        answer = response.choices[0].message.content
+        
+        response_message = response.choices[0].message
+
+        # 2. Проверяем, хочет ли он вызвать функцию
+        if response_message.tool_calls:
+            tool_call = response_message.tool_calls[0]
+            function_name = tool_call.function.name
+            function_args = json.loads(tool_call.function.arguments)
+
+            if function_name == "search_part_analogs":
+                part_number = function_args.get("part_number")
+                
+                # Вызываем наш код, который стучится в RapidAPI
+                analogs_result = await get_part_analogs(part_number)
+
+                # Добавляем ответ модели и результат функции в историю
+                messages.append(response_message)
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "name": function_name,
+                    "content": analogs_result
+                })
+
+                # 3. Второй запрос к DeepSeek (он формирует финальный текст для пользователя)
+                second_response = await client.chat.completions.create(
+                    model="deepseek-chat",
+                    messages=messages,
+                    max_tokens=1000,
+                    temperature=0.3,
+                )
+                answer = second_response.choices[0].message.content
+        else:
+            # Если функция не нужна, берем обычный ответ
+            answer = response_message.content
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI error: {str(e)}")
 
