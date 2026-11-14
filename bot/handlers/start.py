@@ -12,8 +12,9 @@ from services.db.queries import (
     get_or_create_user, 
     get_active_car, 
     log_event, 
-    get_analytics_summary
-)
+    get_analytics_summary,
+    get_db
+) 
 
 router = Router()
 WEBAPP_URL = os.getenv("WEBAPP_URL", "https://твой-домен.bothost.tech")
@@ -115,12 +116,23 @@ async def show_donations(callback: CallbackQuery):
 async def cmd_stats(message: Message):
     """Секретная команда для просмотра статистики (только для админа)."""
     if message.from_user.id != ADMIN_ID:
-        return # Игнорируем всех, кроме тебя
+        return
     
+    # Получаем данные из событий
     data = await get_analytics_summary()
     
+    # Получаем общее количество юзеров из таблицы users
+    db = await get_db()
+    async with db.execute("SELECT COUNT(*) FROM users") as cursor:
+        row = await cursor.fetchone()
+        total_users = row[0] if row else 0
+
+    # Получаем количество уникальных пользователей, которые заходили в Mini App (если надо)
+    # Можно добавить другие метрики.
+    
     text = f"📊 <b>Статистика бота</b>\n\n"
-    text += f"Уникальных пользователей: <b>{data['unique_users']}</b>\n\n"
+    text += f"Всего аккаунтов в базе: <b>{total_users}</b>\n"
+    text += f"Уникальных в аналитике: <b>{data['unique_users']}</b>\n\n"
     text += "<b>События:</b>\n"
     
     if data["events"]:
